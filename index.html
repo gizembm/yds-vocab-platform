@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelime Kartları</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Kelime Kartları</h1>
+  <div class="stats"><span title="Günlük seri">🔥 <b id="streak">0</b> gün</span><span title="Puan">⭐ <b id="pts">0</b></span><span title="Bugün">✅ <b id="today">0</b></span></div>
+</header>
+<main>
+  <section id="home">
+    <div class="panel">
+      <h2>Kelime listesi yükle</h2>
+      <p class="hint">CSV veya XML. Sütun sırası: Kategori, İngilizce Kelime, Türkçe Karşılığı, Örnek Cümle, Cümle Çevirisi, İpucu (Mnemonic).</p>
+      <input type="file" id="file" accept=".csv,.xml,.txt">
+      <div class="row"><input id="newDeck" placeholder="Yeni kategori adı"><button id="addDeck">Kategori ekle</button></div>
+    </div>
+    <div id="decks"></div>
+  </section>
+  <section id="study" hidden>
+    <div class="bar"><button class="ghost" id="back">← Kategoriler</button><span id="info"></span></div>
+    <div id="empty" hidden class="panel"><p>Şu an tekrar edilecek kart yok. 🎉</p><button id="all">Hepsini çalış</button></div>
+    <div id="game">
+      <div class="scene"><div class="card" id="card">
+        <div class="face front"><button class="spk" id="spkW" aria-label="Kelimeyi seslendir">🔊</button><small id="cat"></small><div id="en"></div><small>çevirmek için dokun</small></div>
+        <div class="face back"><div id="tr"></div><p><button class="spk s" id="spkS" aria-label="Cümleyi seslendir">🔊</button><span id="ex"></span></p><p class="mut" id="exTr"></p><p class="mn" id="mn"></p></div>
+      </div></div>
+      <div class="rate" id="rate" hidden>
+        <button data-q="miss" class="b-miss">Bilemedim</button>
+        <button data-q="hard" class="b-hard">Zorlandım</button>
+        <button data-q="know" class="b-know">Biliyordum</button>
+      </div>
+    </div>
+  </section>
+  <section id="play" hidden>
+    <div class="bar"><button class="ghost" id="playBack">← Kategoriler</button><span id="playInfo"></span></div>
+    <div class="panel game-panel">
+      <h2 id="playTitle">Oyun</h2>
+      <p class="hint" id="playHint"></p>
+      <div id="matchBoard" class="match-board" hidden></div>
+      <div id="quizBox" class="quiz-box" hidden>
+        <div class="quiz-card">
+          <small id="quizCat"></small>
+          <div id="quizWord"></div>
+          <p id="quizExample" class="mut"></p>
+        </div>
+        <div id="quizChoices" class="quiz-choices"></div>
+        <p id="quizFeedback" class="feedback"></p>
+      </div>
+      <div class="game-actions">
+        <button id="gameAgain">Yeniden karıştır</button>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+:root{--bg:#f3f5f1;--ink:#1d2a24;--mut:#5f6f66;--card:#fff;--line:#d9e0da;--pri:#1f6f5c;--miss:#c0392b;--hard:#d98a1f;--know:#2e8b57;--accent:#3467a8}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:14px 20px;background:var(--pri);color:#fff}
+h1{margin:0;font-size:1.3rem}h2{margin:0 0 6px;font-size:1.05rem}
+.stats{display:flex;gap:14px}
+main{max-width:720px;margin:0 auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.hint,.mut{color:var(--mut);font-size:.9rem}
+.row{display:flex;gap:8px;margin-top:10px}
+input[type=text],input:not([type]){flex:1;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:1rem}
+button{cursor:pointer;border:0;border-radius:8px;padding:9px 14px;font-size:.95rem;background:var(--pri);color:#fff}
+button:hover{filter:brightness(1.1)}button:focus-visible,input:focus-visible{outline:3px solid #8cc7b8;outline-offset:2px}
+button.ghost{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+button.del{background:var(--miss)}
+.deck{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--pri);border-radius:12px;padding:12px 16px;margin-bottom:10px}
+.deck small{color:var(--mut);display:block}.deck div:last-child{display:flex;gap:6px}
+.deck button.play{background:var(--accent)}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--mut)}
+.scene{perspective:1100px;height:340px}
+.card{position:relative;height:100%;transition:transform .55s;transform-style:preserve-3d;cursor:pointer}
+.card.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:auto;box-shadow:0 6px 18px rgba(30,60,50,.1)}
+.back{transform:rotateY(180deg)}
+#en{font-size:2.2rem;font-weight:700;margin:10px 0;word-break:break-word}#tr{font-size:1.6rem;font-weight:700;color:var(--pri)}
+.face small{color:var(--mut)}
+.mn{background:#fff6dc;border-radius:8px;padding:8px 12px;font-size:.92rem}.mn:empty{display:none}
+.spk{position:absolute;top:10px;right:10px;background:#e8f1ee;color:inherit;padding:6px 10px}.spk.s{position:static;padding:2px 8px;margin-right:6px}
+.rate{display:flex;gap:8px;margin-top:14px}.rate button{flex:1;padding:13px 6px;font-size:1rem}
+.b-miss{background:var(--miss)}.b-hard{background:var(--hard)}.b-know{background:var(--know)}
+.game-panel{margin-top:4px}
+.match-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.match-card{min-height:74px;background:#f9fbfa;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word}
+.match-card.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,103,168,.14)}
+.match-card.done{background:#e9f5ef;color:var(--know);border-color:#b8dec9;cursor:default}
+.match-card.bad{background:#fdecea;border-color:#f0b8b3}
+.quiz-card{background:#f9fbfa;border:1px solid var(--line);border-radius:10px;padding:18px;text-align:center;margin-top:12px}
+#quizWord{font-size:2rem;font-weight:700;margin:8px 0;word-break:break-word}
+.quiz-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.quiz-choices button{background:#eef4f1;color:var(--ink);border:1px solid var(--line);min-height:54px}
+.quiz-choices button.good{background:var(--know);color:#fff}.quiz-choices button.bad{background:var(--miss);color:#fff}
+.feedback{min-height:28px;margin:10px 0 0;font-weight:700}.feedback.good{color:var(--know)}.feedback.bad{color:var(--miss)}
+.game-actions{display:flex;justify-content:flex-end;margin-top:14px}
+@media(max-width:480px){.scene{height:380px}#en{font-size:1.8rem}.row,.rate,.quiz-choices{grid-template-columns:1fr;flex-direction:column}.match-board{grid-template-columns:1fr 1fr}.deck div:last-child{width:100%;display:grid;grid-template-columns:1fr 1fr}.deck div:last-child button:first-child{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
