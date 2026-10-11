@@ -29,6 +29,11 @@
         <div class="face front"><button class="spk" id="spkW" aria-label="Kelimeyi seslendir">🔊</button><small id="cat"></small><div id="en"></div><small>çevirmek için dokun</small></div>
         <div class="face back"><div id="tr"></div><p><button class="spk s" id="spkS" aria-label="Cümleyi seslendir">🔊</button><span id="ex"></span></p><p class="mut" id="exTr"></p><p class="mn" id="mn"></p></div>
       </div></div>
+      <nav class="card-nav" aria-label="Kartlar arasında gezinme">
+        <button class="ghost" id="prevCard" type="button" title="Önceki kart" aria-label="Önceki kart">&#8592;</button>
+        <span id="cardPosition" aria-live="polite"></span>
+        <button class="ghost" id="nextCard" type="button" title="Sonraki kart" aria-label="Sonraki kart">&#8594;</button>
+      </nav>
       <div class="rate" id="rate" hidden>
         <button data-q="miss" class="b-miss">Bilemedim</button>
         <button data-q="hard" class="b-hard">Zorlandım</button>
