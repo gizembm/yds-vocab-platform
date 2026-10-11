@@ -29,6 +29,10 @@ button.del{background:var(--miss)}
 .spk{position:absolute;top:10px;right:10px;background:#e8f1ee;color:inherit;padding:6px 10px}.spk.s{position:static;padding:2px 8px;margin-right:6px}
 .rate{display:flex;gap:8px;margin-top:14px}.rate button{flex:1;padding:13px 6px;font-size:1rem}
 .b-miss{background:var(--miss)}.b-hard{background:var(--hard)}.b-know{background:var(--know)}
+.card-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
+.card-nav button{width:48px;height:44px;padding:0;font-size:1.3rem}
+.card-nav button:disabled{opacity:.35;cursor:default;filter:none}
+#cardPosition{min-width:80px;text-align:center;font-variant-numeric:tabular-nums;color:var(--mut)}
 .game-panel{margin-top:4px}
 .match-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .match-card{min-height:74px;background:#f9fbfa;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word}

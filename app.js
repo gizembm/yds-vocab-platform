@@ -1,7 +1,7 @@
 const KEY='flashcards_v1', DAY=864e5, INTERVAL=[0,0,1,3,7,14]; // Leitner kutuları 1..5 (gün)
 const $=id=>document.getElementById(id);
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{decks:{},pts:0,streak:0,last:'',today:0,cur:null};
-let scope=null, forceAll=false, queue=[], flipped=false;
+let scope=null, forceAll=false, queue=[], flipped=false, studyIndex=0;
 let playScope=null, playMode='', matchPick=[], matchDone=0, quizList=[], quizIndex=0, quizLocked=false;
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 const dstr=t=>new Date(t).toISOString().slice(0,10);
@@ -12,27 +12,39 @@ const cardCat=card=>Object.keys(S.decks).find(k=>S.decks[k].includes(card))||'';
 
 // ---------- İçe aktarma ----------
 function addRows(rows){
-  let n=0;
+  let n=0,duplicate=0,invalid=0;
   rows.forEach(r=>{
     const [cat,en,tr,ex,exTr,mn]=r.map(x=>(x||'').trim());
-    if(!en||!tr)return;
+    if(!en||!tr){invalid++;return;}
     const d=cat||'Genel'; S.decks[d]=S.decks[d]||[];
-    if(S.decks[d].some(c=>c.en.toLowerCase()===en.toLowerCase()))return;
+    if(S.decks[d].some(c=>c.en.toLowerCase()===en.toLowerCase())){duplicate++;return;}
     S.decks[d].push({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),en,tr,ex:ex||'',exTr:exTr||'',mn:mn||'',box:1,due:0});n++;
   });
-  save();renderDecks();alert(n+' yeni kart eklendi.');
+  save();renderDecks();
+  let message=n+' yeni kart eklendi.';
+  if(duplicate)message+='\n'+duplicate+' kelime zaten kayıtlı olduğu için atlandı.';
+  if(invalid)message+='\n'+invalid+' satırda İngilizce kelime veya Türkçe anlam eksik. Sütun sırasını kontrol et.';
+  alert(message);
 }
 function parseFile(file){
   const rd=new FileReader();
   rd.onload=()=>{
     const text=String(rd.result).replace(/^\uFEFF/,'');
+    if(text.startsWith('PK\u0003\u0004'))return alert('Bu dosya CSV değil, sıkıştırılmış bir dosya (Excel olabilir). Excel’den CSV UTF-8 biçiminde kaydet.');
     let rows;
     if(file.name.toLowerCase().endsWith('.xml')){
       const doc=new DOMParser().parseFromString(text,'application/xml');
       if(doc.querySelector('parsererror'))return alert('XML okunamadı.');
       rows=[...doc.documentElement.children].map(el=>[...el.children].map(c=>c.textContent));
     }else{
-      rows=Papa.parse(text,{skipEmptyLines:true}).data;
+      const parsed=Papa.parse(text,{skipEmptyLines:'greedy'});
+      if(parsed.errors.some(e=>e.type==='Quotes'))return alert('CSV tırnakları hatalı. Dosyayı CSV UTF-8 biçiminde yeniden kaydet.');
+      rows=parsed.data.map(row=>{
+        if(row.length!==1)return row;
+        // Some exports quote an entire CSV record as one cell.
+        const nested=Papa.parse(row[0],{delimiter:',',skipEmptyLines:'greedy'});
+        return !nested.errors.length&&nested.data.length===1&&nested.data[0].length===6?nested.data[0]:row;
+      });
     }
     if(rows.length&&/kategori|categor/i.test(rows[0][0]||''))rows.shift(); // başlık satırı
     addRows(rows);
@@ -77,16 +89,19 @@ function buildQueue(){
   const now=Date.now();
   queue=pool().filter(c=>forceAll||c.due<=now).sort((a,b)=>a.box-b.box||a.due-b.due);
   const i=queue.findIndex(c=>c.id===S.cur); // kaldığın karttan devam
-  if(i>0)queue.unshift(queue.splice(i,1)[0]);
+  studyIndex=i>=0?i:0;
 }
 function startStudy(name){
   scope=name;forceAll=false;$('home').hidden=true;$('study').hidden=false;showCard();
 }
 function showCard(){
   buildQueue();
-  const c=queue[0];
+  const c=queue[studyIndex];
   $('empty').hidden=!!c;$('game').hidden=!c;
   $('info').textContent=(scope||'Tüm kategoriler')+' · '+queue.length+' kart sırada';
+  $('cardPosition').textContent=c?(studyIndex+1)+' / '+queue.length:'';
+  $('prevCard').disabled=!c||studyIndex===0;
+  $('nextCard').disabled=!c||studyIndex===queue.length-1;
   if(!c){S.cur=null;save();return;}
   S.cur=c.id;save();
   flipped=false;$('card').classList.remove('flip');$('rate').hidden=true;
@@ -95,16 +110,23 @@ function showCard(){
   $('mn').textContent=c.mn?'💡 '+c.mn:'';
 }
 $('card').onclick=()=>{flipped=!flipped;$('card').classList.toggle('flip',flipped);if(flipped)$('rate').hidden=false;};
+function moveCard(step){
+  const next=studyIndex+step;
+  if(next<0||next>=queue.length)return;
+  S.cur=queue[next].id;showCard();
+}
+$('prevCard').onclick=()=>moveCard(-1);
+$('nextCard').onclick=()=>moveCard(1);
 $('rate').onclick=e=>{
   const q=e.target.dataset.q;if(!q)return;
-  const c=queue[0];
+  const c=queue[studyIndex];if(!c)return;
   if(q==='know'){c.box=Math.min(5,c.box+1);S.pts+=10;c.due=Date.now()+INTERVAL[c.box]*DAY;}
   else if(q==='hard'){S.pts+=3;c.due=Date.now()+Math.max(1,INTERVAL[c.box])*DAY/ (c.box>1?2:1);}
   else{c.box=1;c.due=Date.now()+60*1000;} // 1 dk sonra tekrar
   const t=dstr(Date.now());
   if(S.last!==t){S.streak=S.last===dstr(Date.now()-DAY)?S.streak+1:1;S.last=t;S.today=0;}
   S.today++;renderStats();
-  const i=queue.length>1?1:0; S.cur=queue[i]&&queue[i].id!==c.id?queue[i].id:null;
+  const next=queue[(studyIndex+1)%queue.length];S.cur=next&&next.id!==c.id?next.id:null;
   save();showCard();
 };
 $('all').onclick=()=>{forceAll=true;showCard();};
