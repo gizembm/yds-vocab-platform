@@ -62,6 +62,22 @@
     </div>
   </section>
 </main>
+<dialog id="importResult" class="import-result" aria-labelledby="importTitle" aria-describedby="importSummary">
+  <h2 id="importTitle"></h2>
+  <p id="importSummary" class="mut"></p>
+  <dl class="import-totals">
+    <div><dt>Eklenen</dt><dd id="importAdded" class="import-added">0</dd></div>
+    <div><dt>Tekrarlı satır</dt><dd id="importDuplicate" class="import-duplicate">0</dd></div>
+    <div><dt>Eksik satır</dt><dd id="importInvalid">0</dd></div>
+  </dl>
+  <p id="importInvalidNote" class="hint" hidden>Eksik satırlarda İngilizce kelime veya Türkçe karşılık bulunamadı. Dosyadaki sütun sırasını kontrol et.</p>
+  <section id="importRepeated" hidden>
+    <h3 id="importRepeatedTitle"></h3>
+    <p class="hint">Bu kelimeler aynı kategoride zaten kayıtlı olduğu için tekrar eklenmedi.</p>
+    <ul id="importRepeatedList" class="import-repeated-list" tabindex="0" aria-label="Tekrarlı kelime listesi"></ul>
+  </section>
+  <form method="dialog" class="game-actions"><button autofocus>Tamam</button></form>
+</dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="app.js"></script>
 </body>
