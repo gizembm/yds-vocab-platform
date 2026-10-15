@@ -13,6 +13,13 @@
 </header>
 <main>
   <section id="home">
+    <div class="panel daily-panel">
+      <h2>Günlük 20 kelime programı</h2>
+      <p id="programSummary" aria-live="polite"></p>
+      <button id="programStart">Programı başlat</button>
+      <button id="programStudy" hidden>Günlük çalışmaya devam et</button>
+      <div id="programActions" class="daily-actions"></div>
+    </div>
     <div class="panel">
       <h2>Kelime listesi yükle</h2>
       <p class="hint">CSV veya XML. Sütun sırası: Kategori, İngilizce Kelime, Türkçe Karşılığı, Örnek Cümle, Cümle Çevirisi, İpucu (Mnemonic).</p>
@@ -24,6 +31,11 @@
   <section id="study" hidden>
     <div class="bar"><button class="ghost" id="back">← Kategoriler</button><span id="info"></span></div>
     <div id="empty" hidden class="panel"><p>Şu an tekrar edilecek kart yok. 🎉</p><button id="all">Hepsini çalış</button></div>
+    <div id="dailyStudyDone" hidden class="panel">
+      <h2>Günlük kartlar tamamlandı</h2>
+      <div id="dailyStudyActions" class="daily-actions"></div>
+      <button id="dailyReturn" class="ghost">Ana ekrana dön</button>
+    </div>
     <div id="game">
       <div class="scene"><div class="card" id="card">
         <div class="face front"><button class="spk" id="spkW" aria-label="Kelimeyi seslendir">🔊</button><small id="cat"></small><div id="en"></div><small>çevirmek için dokun</small></div>
@@ -37,7 +49,7 @@
       <div class="rate" id="rate" hidden>
         <button data-q="miss" class="b-miss">Bilemedim</button>
         <button data-q="hard" class="b-hard">Zorlandım</button>
-        <button data-q="know" class="b-know">Biliyordum</button>
+        <button data-q="know" class="b-know">Öğrendim</button>
       </div>
     </div>
   </section>
@@ -80,5 +92,6 @@
 </dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="app.js"></script>
+<script src="daily.js"></script>
 </body>
 </html>

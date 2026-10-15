@@ -2,9 +2,10 @@ const KEY='flashcards_v1', DAY=864e5, INTERVAL=[0,0,1,3,7,14]; // Leitner kutula
 const $=id=>document.getElementById(id);
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{decks:{},pts:0,streak:0,last:'',today:0,cur:null};
 let scope=null, forceAll=false, queue=[], flipped=false, studyIndex=0;
+let studyDaily=false, playDaily=false;
 let playScope=null, playMode='', matchPick=[], matchCards=[], matchTimer=null, matchSeen=new Map(), quizList=[], quizStep=0, quizTimer=null, quizLocked=false;
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
-const dstr=t=>new Date(t).toISOString().slice(0,10);
+const dstr=t=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(t);
 const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 const allCards=()=>Object.values(S.decks).flat();
 const cardsOf=name=>name?S.decks[name]||[]:allCards();
@@ -82,6 +83,7 @@ function renderStats(){
 }
 function renderDecks(){
   renderStats();
+  if(typeof renderDaily==='function')renderDaily();
   const box=$('decks');box.innerHTML='';
   const names=Object.keys(S.decks);
   if(!names.length){box.innerHTML='<p class="hint">Henüz kategori yok. Bir dosya yükle veya kategori ekle.</p>';return;}
@@ -107,24 +109,34 @@ function renderDecks(){
 // ---------- Çalışma ----------
 const pool=()=>cardsOf(scope);
 function buildQueue(){
+  if(studyDaily){queue=dailyQueue();studyIndex=Math.max(0,queue.findIndex(c=>c.id===S.program.session.current));return;}
   const now=Date.now();
   queue=pool().filter(c=>forceAll||c.due<=now).sort((a,b)=>a.box-b.box||a.due-b.due);
   const i=queue.findIndex(c=>c.id===S.cur); // kaldığın karttan devam
   studyIndex=i>=0?i:0;
 }
 function startStudy(name){
+  studyDaily=false;playDaily=false;
+  clearTimeout(quizTimer);quizTimer=null;clearTimeout(matchTimer);matchTimer=null;
+  $('play').hidden=true;$('all').hidden=false;$('dailyStudyDone').hidden=true;
   scope=name;forceAll=false;$('home').hidden=true;$('study').hidden=false;showCard();
 }
 function showCard(){
   buildQueue();
   const c=queue[studyIndex];
-  $('empty').hidden=!!c;$('game').hidden=!c;
+  $('empty').hidden=studyDaily||!!c;$('game').hidden=!c;
   $('info').textContent=(scope||'Tüm kategoriler')+' · '+queue.length+' kart sırada';
+  if(studyDaily){
+    $('info').textContent='Günlük çalışma · '+queue.length+' kelime kaldı';
+    $('all').hidden=true;$('dailyStudyDone').hidden=!!c;
+    if(!c)renderDailyActions('dailyStudyActions');
+  }
   $('cardPosition').textContent=c?(studyIndex+1)+' / '+queue.length:'';
   $('prevCard').disabled=!c||studyIndex===0;
   $('nextCard').disabled=!c||studyIndex===queue.length-1;
-  if(!c){S.cur=null;save();return;}
-  S.cur=c.id;save();
+  if(!c){if(!studyDaily)S.cur=null;save();return;}
+  if(studyDaily)S.program.session.current=c.id;else S.cur=c.id;
+  save();
   flipped=false;$('card').classList.remove('flip');$('rate').hidden=true;
   $('cat').textContent=Object.keys(S.decks).find(k=>S.decks[k].includes(c))||'';
   $('en').textContent=c.en;$('tr').textContent=c.tr;$('ex').textContent=c.ex;$('exTr').textContent=c.exTr;
@@ -134,12 +146,14 @@ $('card').onclick=()=>{flipped=!flipped;$('card').classList.toggle('flip',flippe
 function moveCard(step){
   const next=studyIndex+step;
   if(next<0||next>=queue.length)return;
-  S.cur=queue[next].id;showCard();
+  if(studyDaily)S.program.session.current=queue[next].id;else S.cur=queue[next].id;
+  save();showCard();
 }
 $('prevCard').onclick=()=>moveCard(-1);
 $('nextCard').onclick=()=>moveCard(1);
 $('rate').onclick=e=>{
   const q=e.target.dataset.q;if(!q)return;
+  if(studyDaily){rateDaily(q);return;}
   const c=queue[studyIndex];if(!c)return;
   if(q==='know'){c.box=Math.min(5,c.box+1);S.pts+=10;c.due=Date.now()+INTERVAL[c.box]*DAY;}
   else if(q==='hard'){S.pts+=3;c.due=Date.now()+Math.max(1,INTERVAL[c.box])*DAY/ (c.box>1?2:1);}
@@ -151,15 +165,18 @@ $('rate').onclick=e=>{
   save();showCard();
 };
 $('all').onclick=()=>{forceAll=true;showCard();};
-$('back').onclick=()=>{$('study').hidden=true;$('home').hidden=false;renderDecks();};
+$('back').onclick=()=>showHome();
 
 // ---------- Oyunlar ----------
 function showHome(){
+  studyDaily=false;playDaily=false;
   clearTimeout(quizTimer);quizTimer=null;
   clearTimeout(matchTimer);matchTimer=null;matchPick=[];
   $('study').hidden=true;$('play').hidden=true;$('home').hidden=false;renderDecks();
 }
 function showPlay(mode,name){
+  playDaily=false;studyDaily=false;
+  $('gameAgain').textContent='Yeniden karıştır';
   clearTimeout(quizTimer);quizTimer=null;
   clearTimeout(matchTimer);matchTimer=null;matchPick=[];
   playMode=mode;playScope=name;$('home').hidden=true;$('study').hidden=true;$('play').hidden=false;
@@ -173,6 +190,7 @@ function startMatch(name){
   buildMatch();
 }
 function buildMatch(){
+  if(playDaily){dailyBuildMatch();return;}
   clearTimeout(matchTimer);matchTimer=null;
   const board=$('matchBoard');board.innerHTML='';matchPick=[];matchCards=[];matchSeen=new Map();
   const pool=cardsOf(playScope);
@@ -205,6 +223,7 @@ function setMatchTile(btn,card){
   btn.setAttribute('aria-pressed','false');
 }
 function pickMatch(btn){
+  if(playDaily){dailyPickMatch(btn);return;}
   if(matchTimer!==null||matchPick.includes(btn))return;
   if(matchPick.length&&matchPick[0].dataset.type===btn.dataset.type){
     matchPick[0].classList.remove('active');matchPick[0].setAttribute('aria-pressed','false');matchPick=[];
@@ -256,6 +275,7 @@ function quizPriority(card){
   return difficulty*10+(unknown?5:0)+Math.max(0,5-(card.box||1));
 }
 function showQuiz(){
+  if(playDaily){dailyShowQuiz();return;}
   const c=quizList[0]?.card, choices=$('quizChoices');
   choices.innerHTML='';$('quizFeedback').textContent='';$('quizFeedback').className='feedback';quizLocked=false;
   if(!c){$('quizWord').textContent='';$('quizExample').textContent='';$('quizCat').textContent='';choices.innerHTML='<p class="hint">Soru-cevap için kelime eklemen yeterli.</p>';return;}
@@ -270,6 +290,7 @@ function showQuiz(){
   if(opts.length<2)$('quizFeedback').textContent='Daha güçlü seçenekler için aynı kategoriye birkaç kelime daha ekle.';
 }
 function answerQuiz(btn,ok,c){
+  if(playDaily){dailyAnswerQuiz(btn,ok,c);return;}
   if(quizLocked)return;quizLocked=true;
   btn.classList.add(ok?'good':'bad');
   if(ok){
@@ -291,7 +312,7 @@ function answerQuiz(btn,ok,c){
   },1000);
 }
 $('playBack').onclick=showHome;
-$('gameAgain').onclick=()=>playMode==='match'?buildMatch():startQuiz(playScope);
+$('gameAgain').onclick=()=>playDaily?restartDailyGame():playMode==='match'?buildMatch():startQuiz(playScope);
 
 // ---------- Telaffuz ----------
 function speak(t){

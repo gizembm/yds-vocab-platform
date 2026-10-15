@@ -5,6 +5,10 @@ body{margin:0;font-family:system-ui,"Segoe UI",sans-serif;background:var(--bg);c
 header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:14px 20px;background:var(--pri);color:#fff}
 h1{margin:0;font-size:1.3rem}h2{margin:0 0 6px;font-size:1.05rem}
 .stats{display:flex;gap:14px}
+.daily-panel{border-top:4px solid var(--pri)}
+.daily-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.daily-actions p{flex-basis:100%;margin:0}
+button:disabled{opacity:.5;cursor:default}
 main{max-width:720px;margin:0 auto;padding:16px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
 .hint,.mut{color:var(--mut);font-size:.9rem}
