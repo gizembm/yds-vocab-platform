@@ -1,0 +1,154 @@
+.game-panel {
+  padding: 28px;
+}
+#playHint {
+  margin: 4px 0 20px;
+}
+.match-board {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+.match-column {
+  display: grid;
+  grid-template-rows: 24px;
+  grid-auto-rows: minmax(84px,auto);
+  gap: 10px;
+  min-width: 0;
+}
+.match-column h3 {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--mut);
+}
+.match-card {
+  min-height: 84px;
+  background: var(--card);
+  color: var(--ink);
+  border-color: #AAB8AC;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.match-card.active {
+  background: var(--lavender);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #D6CBE4;
+}
+.match-card.done {
+  background: var(--sage);
+  color: var(--know);
+  border-color: #A4BCA2;
+}
+.match-card.bad {
+  background: var(--rose);
+  color: var(--miss);
+  border-color: #B67D76;
+}
+.match-card.done::after {
+  content: '✓ Doğru';
+  font-size: .75rem;
+}
+.match-card.bad::after {
+  content: '× Tekrar dene';
+  font-size: .75rem;
+}
+.quiz-card {
+  background: #F1F4ED;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 16px;
+}
+#quizCat {
+  color: var(--mut);
+  overflow-wrap: anywhere;
+}
+#quizExample {
+  text-align: left;
+}
+#quizWord {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+  letter-spacing: -.025em;
+}
+.sentence-mode .quiz-card {
+  text-align: left;
+}
+.sentence-mode #quizWord {
+  font-size: 1.4rem;
+  line-height: 1.85;
+  font-weight: 600;
+  white-space: pre-wrap;
+  letter-spacing: 0;
+}
+.quiz-choices {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.quiz-choices button {
+  background: var(--card);
+  color: var(--ink);
+  border-color: #AAB8AC;
+  min-height: 60px;
+  padding: 16px;
+  text-align: left;
+}
+.quiz-choices button:hover:not(:disabled) {
+  background: var(--lavender);
+  border-color: var(--accent);
+}
+.quiz-choices button.good {
+  background: var(--sage);
+  color: var(--know);
+  border-color: #A4BCA2;
+}
+.quiz-choices button.bad {
+  background: var(--rose);
+  color: var(--miss);
+  border-color: #B67D76;
+}
+.quiz-choices button.good::after {
+  content: ' ✓';
+  font-weight: 700;
+}
+.quiz-choices button.bad::after {
+  content: ' ×';
+  font-weight: 700;
+}
+.quiz-choices button:disabled {
+  opacity: 1;
+}
+.feedback {
+  min-height: 28px;
+  margin: 16px 0 0;
+  font-weight: 600;
+  font-size: .95rem;
+}
+.feedback.good {
+  color: var(--know);
+}
+.feedback.bad {
+  color: var(--miss);
+}
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+#gameAgain {
+  background: var(--lavender);
+  color: var(--accent);
+}

@@ -1,0 +1,130 @@
+.scene {
+  perspective: 1100px;
+  height: 380px;
+}
+.card {
+  position: relative;
+  height: 100%;
+  transition: transform 400ms ease;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  border-radius: 20px;
+}
+.card.flip {
+  transform: rotateY(180deg);
+}
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 58px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  align-items: center;
+  text-align: center;
+  overflow: auto;
+  box-shadow: var(--shadow);
+  overflow-wrap: anywhere;
+}
+.back {
+  transform: rotateY(180deg);
+  background: #F0F4EC;
+}
+.face>* {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+.face p {
+  margin: 8px 0;
+}
+.back p {
+  width: 100%;
+  text-align: left;
+}
+#en {
+  font-size: clamp(1.8rem,5vw,2.65rem);
+  font-weight: 700;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+  letter-spacing: -.035em;
+}
+#tr {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--pri);
+}
+.face small {
+  color: var(--mut);
+}
+.mn {
+  background: var(--peach);
+  color: var(--hard);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: .92rem;
+}
+.mn:empty {
+  display: none;
+}
+.spk {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-width: 44px;
+  background: var(--sage);
+  color: var(--ink);
+  padding: 8px;
+}
+.spk.s {
+  position: static;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.rate {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.rate button {
+  flex: 1;
+  padding: 14px 8px;
+}
+.b-miss {
+  background: var(--rose);
+  color: var(--miss);
+  border-color: #DDBDB8;
+}
+.b-hard {
+  background: var(--peach);
+  color: var(--hard);
+  border-color: #DECAA9;
+}
+.b-know {
+  background: var(--sage);
+  color: var(--know);
+  border-color: #B3CAB2;
+}
+.card-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.card-nav button {
+  width: 48px;
+  height: 44px;
+  padding: 0;
+  font-size: 1.3rem;
+}
+#cardPosition {
+  min-width: 80px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--mut);
+  font-size: .9rem;
+}

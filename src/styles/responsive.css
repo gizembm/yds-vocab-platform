@@ -1,0 +1,79 @@
+@media(max-width:600px) {
+  header {
+    padding: 20px 18px 16px;
+    gap: 12px;
+  }
+  h1 {
+    font-size: 1.25rem;
+  }
+  main {
+    padding: 20px 16px 32px;
+  }
+  .panel,.deck,.game-panel {
+    padding: 20px;
+  }
+  .daily-panel {
+    padding: 24px 20px;
+  }
+  .daily-panel h2 {
+    font-size: 1.3rem;
+  }
+  .row,.rate {
+    flex-direction: column;
+  }
+  .row button {
+    width: 100%;
+  }
+  .quiz-choices {
+    grid-template-columns: 1fr;
+  }
+  .deck div:last-child,.daily-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .deck div:last-child button,.daily-actions button {
+    width: 100%;
+  }
+  .deck button.del {
+    margin-left: 0;
+  }
+  .daily-actions p {
+    min-width: 0;
+  }
+  .scene {
+    height: 410px;
+  }
+  .face {
+    padding: 60px 20px 24px;
+  }
+  .quiz-card {
+    padding: 24px 18px;
+  }
+  .sentence-mode #quizWord {
+    font-size: 1.2rem;
+  }
+  .match-board {
+    gap: 10px;
+  }
+  .match-card {
+    padding: 10px 8px;
+    font-size: .9rem;
+  }
+  .bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .import-result {
+    padding: 22px;
+  }
+  .import-totals {
+    gap: 8px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    animation: none!important;
+    transition: none!important;
+    scroll-behavior: auto!important;
+  }
+}

@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+  --bg: #F7F5EF;
+  --card: #FFFEFA;
+  --ink: #293B34;
+  --mut: #627168;
+  --line: #DCE2D8;
+  --pri: #426550;
+  --sage: #E3EDE2;
+  --accent: #63557C;
+  --lavender: #EDE8F5;
+  --rose: #F6E3E1;
+  --peach: #FAECD8;
+  --miss: #87443F;
+  --hard: #795723;
+  --know: #426550;
+  --shadow: 0 8px 28px rgba(41,59,52,.045);
+}

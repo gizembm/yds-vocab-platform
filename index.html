@@ -4,29 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kelime Kartları</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
 <header>
   <h1>Kelime Kartları</h1>
-  <div class="stats"><span title="Günlük seri">🔥 <b id="streak">0</b> gün</span><span title="Puan">⭐ <b id="pts">0</b></span><span title="Bugün">✅ <b id="today">0</b></span></div>
+  <div class="stats" aria-label="Çalışma istatistikleri"><span title="Günlük seri">🔥 <b id="streak">0</b> gün seri</span><span title="Puan">⭐ <b id="pts">0</b> puan</span><span title="Bugün">✅ <b id="today">0</b> bugün</span></div>
 </header>
 <main>
   <section id="home">
     <div class="panel daily-panel">
+      <span class="eyebrow">HER GÜN BİR ADIM</span>
       <h2>Günlük 20 kelime programı</h2>
       <p id="programSummary" aria-live="polite"></p>
       <button id="programStart">Programı başlat</button>
       <button id="programStudy" hidden>Günlük çalışmaya devam et</button>
       <div id="programActions" class="daily-actions"></div>
     </div>
-    <div class="panel">
+    <h2 class="section-heading">Kategorilerin</h2>
+    <div id="decks"></div>
+    <div class="panel import-panel">
       <h2>Kelime listesi yükle</h2>
       <p class="hint">CSV veya XML. Sütun sırası: Kategori, İngilizce Kelime, Türkçe Karşılığı, Örnek Cümle, Cümle Çevirisi, İpucu (Mnemonic).</p>
-      <input type="file" id="file" accept=".csv,.xml,.txt">
-      <div class="row"><input id="newDeck" placeholder="Yeni kategori adı"><button id="addDeck">Kategori ekle</button></div>
+      <input type="file" id="file" accept=".csv,.xml,.txt" aria-label="Kelime listesi dosyası">
+      <div class="row"><input id="newDeck" placeholder="Yeni kategori adı" aria-label="Yeni kategori adı"><button id="addDeck">Kategori ekle</button></div>
     </div>
-    <div id="decks"></div>
   </section>
   <section id="study" hidden>
     <div class="bar"><button class="ghost" id="back">← Kategoriler</button><span id="info"></span></div>
@@ -66,7 +68,7 @@
           <p id="quizExample" class="mut"></p>
         </div>
         <div id="quizChoices" class="quiz-choices"></div>
-        <p id="quizFeedback" class="feedback"></p>
+        <p id="quizFeedback" class="feedback" role="status" aria-live="polite"></p>
       </div>
       <div class="game-actions">
         <button id="gameAgain">Yeniden karıştır</button>
@@ -91,7 +93,23 @@
   <form method="dialog" class="game-actions"><button autofocus>Tamam</button></form>
 </dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="app.js"></script>
-<script src="daily.js"></script>
+<!-- Core, feature definitions, then bootstrap. Classic scripts preserve file:// support. -->
+<script src="src/js/core/config.js"></script>
+<script src="src/js/core/utils.js"></script>
+<script src="src/js/core/store.js"></script>
+<script src="src/js/core/session.js"></script>
+<script src="src/js/features/import/importer.js"></script>
+<script src="src/js/features/decks/decks.js"></script>
+<script src="src/js/features/study/study.js"></script>
+<script src="src/js/features/navigation/navigation.js"></script>
+<script src="src/js/features/games/matching.js"></script>
+<script src="src/js/features/games/quiz.js"></script>
+<script src="src/js/features/games/sentence.js"></script>
+<script src="src/js/features/audio/speech.js"></script>
+<script src="src/js/features/daily/scheduler.js"></script>
+<script src="src/js/features/daily/view.js"></script>
+<script src="src/js/features/daily/games.js"></script>
+<script src="src/js/features/daily/lifecycle.js"></script>
+<script src="src/js/bootstrap.js"></script>
 </body>
 </html>
