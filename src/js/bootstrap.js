@@ -22,6 +22,7 @@
     const { mode, scope } = app.session.play;
     if (mode === 'match') return app.matching.buildMatch();
     if (mode === 'sentence') return app.sentence.startSentence(scope);
+    if (mode === 'synonyms' || mode === 'antonyms') return app.quiz.startRelation(scope, mode);
     return app.quiz.startQuiz(scope);
   };
   $('spkW').onclick = event => {
@@ -37,11 +38,25 @@
   $('dailyReturn').onclick = app.navigation.showHome;
 
   app.decks.renderDecks();
-  const currentCardId = app.store.data.cur;
-  if (currentCardId) {
-    const category = Object.keys(app.store.data.decks)
-      .find(name => app.store.data.decks[name].some(card => card.id === currentCardId));
-    if (category) app.study.startStudy(category);
+  const lastView = app.store.data.lastView;
+  if (lastView?.type === 'study') {
+    app.study.startStudy(lastView.scope);
+  } else if (lastView?.type === 'play') {
+    if (lastView.mode === 'match') app.matching.startMatch(lastView.scope);
+    else if (lastView.mode === 'sentence') app.sentence.startSentence(lastView.scope);
+    else if (lastView.mode === 'synonyms' || lastView.mode === 'antonyms') app.quiz.startRelation(lastView.scope, lastView.mode);
+    else app.quiz.startQuiz(lastView.scope);
+  } else if (lastView?.type === 'dailyStudy') {
+    app.daily.startDailyStudy();
+  } else if (lastView?.type === 'dailyGame') {
+    app.daily.startDailyGame(lastView.mode);
+  } else if (!lastView) {
+    const currentCardId = app.store.data.cur;
+    if (currentCardId) {
+      const category = Object.keys(app.store.data.decks)
+        .find(name => app.store.data.decks[name].some(card => card.id === currentCardId));
+      if (category) app.study.startStudy(category);
+    }
   }
 
   if (typeof window !== 'undefined') {

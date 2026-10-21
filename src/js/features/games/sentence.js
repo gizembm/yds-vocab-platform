@@ -35,12 +35,16 @@
   }
 
   function startSentence(name) {
+    const resumeId = store.data.lastView?.mode === 'sentence' && store.data.lastView.scope === (name || null)
+      ? store.data.lastView.cardId : null;
     navigation.showPlay('sentence', name);
     $('playTitle').textContent = 'Cümle Tamamla';
     $('playHint').textContent = 'İngilizce cümledeki boşluğu dört seçenekten doğru kelimeyle tamamla.';
     playState.quiz.list = shuffle(sentence.sentenceCards(store.cardsOf(name))).map((card, i) => ({
       card, due : i
     }));
+    const resumeIndex = playState.quiz.list.findIndex(item => item.card.id === resumeId);
+    if (resumeIndex > 0)playState.quiz.list.push(...playState.quiz.list.splice(0, resumeIndex));
     playState.quiz.step = 0;
     sentence.showSentence();
   }
@@ -62,6 +66,10 @@
     if (!c) {
       if (!game || !sentence.sentenceCards(cards).length)$('quizFeedback').textContent = 'Bu seçimde kelimenin geçtiği örnek cümle bulunamadı. Dosyana İngilizce kelimeyi içeren örnek cümleler ekle.';
       return;
+    }
+    if (!game && store.data.lastView?.type === 'play') {
+      store.data.lastView.cardId = c.id;
+      store.save();
     }
     const options = sentence.sentenceOptions(c, cards);
     if (!options.length) {

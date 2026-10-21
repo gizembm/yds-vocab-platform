@@ -8,6 +8,8 @@
   const { study: studyState, play: playState } = globalThis.Vocab.session;
 
   function showHome() {
+    store.data.lastView = { type: 'home' };
+    store.save();
     studyState.daily = false;
     playState.daily = false;
     clearTimeout(playState.quiz.timer);
@@ -32,6 +34,8 @@
     playState.match.pick = [];
     playState.mode = mode;
     playState.scope = name;
+    store.data.lastView = { type: 'play', mode, scope: name || null };
+    store.save();
     $('home').hidden = true;
     $('study').hidden = true;
     $('play').hidden = false;

@@ -17,6 +17,8 @@
     if (mode === 'sentence' && (!ids.length || new Set(store.allCards().map(c => sentence.englishKey(c.en))).size < 4))return;
     navigation.showPlay(mode, null);
     playState.daily = true;
+    store.data.lastView = { type: 'dailyGame', mode };
+    store.save();
     studyState.daily = false;
     const game = s[mode];
     if (game.pending === null)game.pending = shuffle([...ids]);

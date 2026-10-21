@@ -33,6 +33,8 @@
     $('all').hidden = false;
     $('dailyStudyDone').hidden = true;
     studyState.scope = name;
+    store.data.lastView = { type: 'study', scope: name || null };
+    store.save();
     studyState.forceAll = false;
     $('home').hidden = true;
     $('study').hidden = false;
@@ -70,7 +72,8 @@
     $('tr').textContent = c.tr;
     $('ex').textContent = c.ex;
     $('exTr').textContent = c.exTr;
-    $('mn').textContent = c.mn ? '💡 ' + c.mn : '';
+    $('synonyms').textContent = c.synonyms ? 'Eş anlamlı: ' + c.synonyms : '';
+    $('antonyms').textContent = c.antonyms ? 'Zıt anlamlı: ' + c.antonyms : '';
   }
 
   function flipCard() {

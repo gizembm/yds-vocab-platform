@@ -20,7 +20,7 @@ CSV veya XML ile kelime listesi yukleyip calisma kartlari, eslestirme ve soru-ce
 Dosya yuklerken sutun sirasi:
 
 ```text
-Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Ipucu
+Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Es Anlamli, Zit Anlamli
 ```
 
 ## Günlük 20 kelime programı

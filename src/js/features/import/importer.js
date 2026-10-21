@@ -9,7 +9,7 @@
     let n = 0, duplicate = 0, invalid = 0;
     const repeated = new Map();
     rows.forEach(r => {
-      const [cat, en, tr, ex, exTr, mn] = r.map(x => (x || '').trim());
+      const [cat, en, tr, ex, exTr, synonyms, antonyms] = r.map(x => (x || '').trim());
       if (!en || !tr) {
         invalid++;
         return;
@@ -27,7 +27,7 @@
         return;
       }
       store.data.decks[d].push({
-        id : Date.now() + '-' + Math.random().toString(36).slice(2, 7), en, tr, ex : ex || '', exTr : exTr || '', mn : mn || '', box : 1, due : 0
+        id : Date.now() + '-' + Math.random().toString(36).slice(2, 7), en, tr, ex : ex || '', exTr : exTr || '', synonyms : synonyms || '', antonyms : antonyms || '', box : 1, due : 0
       });
       n++;
     });
@@ -87,7 +87,7 @@
           const nested = Papa.parse(row[0], {
             delimiter : ',', skipEmptyLines : 'greedy'
           });
-          return !nested.errors.length && nested.data.length === 1 && nested.data[0].length === 6 ? nested.data[0] : row;
+          return !nested.errors.length && nested.data.length === 1 && nested.data[0].length === 7 ? nested.data[0] : row;
         });
       }
       if (rows.length && /kategori|categor/i.test(rows[0][0] || ''))rows.shift();

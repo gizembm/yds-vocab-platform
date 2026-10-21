@@ -8,6 +8,8 @@
   const { play: playState } = globalThis.Vocab.session;
 
   function startQuiz(name) {
+    const resumeId = store.data.lastView?.mode === 'quiz' && store.data.lastView.scope === (name || null)
+      ? store.data.lastView.cardId : null;
     navigation.showPlay('quiz', name);
     $('playTitle').textContent = 'Soru-Cevap';
     $('playHint').textContent = 'Kelimenin doğru Türkçe karşılığını seç.';
@@ -15,6 +17,28 @@
     playState.quiz.list = cards.map((card, i) => ({
       card, due : i
     }));
+    const resumeIndex = playState.quiz.list.findIndex(item => item.card.id === resumeId);
+    if (resumeIndex > 0)playState.quiz.list.push(...playState.quiz.list.splice(0, resumeIndex));
+    playState.quiz.step = 0;
+    quiz.showQuiz();
+  }
+
+  function relationTerms(card, relation) {
+    return String(card[relation] || '').split(/[;,/|]/).map(value => value.trim()).filter(Boolean);
+  }
+
+  function startRelation(name, relation) {
+    const resumeId = store.data.lastView?.mode === relation && store.data.lastView.scope === (name || null)
+      ? store.data.lastView.cardId : null;
+    navigation.showPlay(relation, name);
+    $('playTitle').textContent = relation === 'synonyms' ? 'Eş Anlam Bul' : 'Zıt Anlam Bul';
+    $('playHint').textContent = relation === 'synonyms'
+      ? 'İngilizce kelimenin eş anlamlısını seç.'
+      : 'İngilizce kelimenin zıt anlamlısını seç.';
+    playState.quiz.list = shuffle(store.cardsOf(name).filter(card => relationTerms(card, relation).length))
+      .map((card, i) => ({ card, due: i }));
+    const resumeIndex = playState.quiz.list.findIndex(item => item.card.id === resumeId);
+    if (resumeIndex > 0)playState.quiz.list.push(...playState.quiz.list.splice(0, resumeIndex));
     playState.quiz.step = 0;
     quiz.showQuiz();
   }
@@ -42,21 +66,30 @@
       choices.innerHTML = '<p class="hint">Soru-cevap için kelime eklemen yeterli.</p>';
       return;
     }
+    if (!playState.daily && store.data.lastView?.type === 'play') {
+      store.data.lastView.cardId = c.id;
+      store.save();
+    }
     $('quizCat').textContent = store.cardCat(c);
     $('quizWord').textContent = c.en;
     $('quizExample').textContent = c.ex || '';
-    const wrong = shuffle(store.cardsOf(playState.scope).filter(x => x.id !== c.id && x.tr !== c.tr)).slice(0, 3).map(x => x.tr);
-    const opts = shuffle([c.tr, ...wrong]);
+    const relation = ['synonyms', 'antonyms'].includes(playState.mode) ? playState.mode : null;
+    const correct = relation ? relationTerms(c, relation) : [c.tr];
+    const answer = correct[0];
+    const wrong = shuffle(store.cardsOf(playState.scope).filter(x => x.id !== c.id)
+      .flatMap(x => relation ? relationTerms(x, relation) : [x.tr])
+      .filter(value => !correct.includes(value)));
+    const opts = shuffle([...new Set([answer, ...wrong])].slice(0, 4));
     opts.forEach(opt => {
       const b = document.createElement('button');
       b.textContent = opt;
-      b.onclick = () => quiz.answerQuiz(b, opt === c.tr, c);
+      b.onclick = () => quiz.answerQuiz(b, correct.includes(opt), c, answer);
       choices.append(b);
     });
     if (opts.length < 2)$('quizFeedback').textContent = 'Daha güçlü seçenekler için aynı kategoriye birkaç kelime daha ekle.';
   }
 
-  function answerQuiz(btn, ok, c) {
+  function answerQuiz(btn, ok, c, answer = c.tr) {
     if (playState.daily) {
       daily.dailyAnswerQuiz(btn, ok, c);
       return;
@@ -68,15 +101,15 @@
       c.quizCorrect = (c.quizCorrect || 0) + 1;
       c.quizDifficulty = Math.max(0, (c.quizDifficulty || 0) - 1);
       store.data.pts += 5;
-      $('quizFeedback').textContent = 'Doğru! ' + c.en + ' = ' + c.tr;
+      $('quizFeedback').textContent = 'Doğru! ' + c.en + ' = ' + answer;
       $('quizFeedback').classList.add('good');
     } else {
       c.quizDifficulty = Math.min(8, (c.quizDifficulty || 0) + 2);
-      $('quizFeedback').textContent = 'Doğru cevap: ' + c.tr;
+      $('quizFeedback').textContent = 'Doğru cevap: ' + answer;
       $('quizFeedback').classList.add('bad');
     }
     [...$('quizChoices').children].forEach(x => {
-      if (x.textContent === c.tr)x.classList.add('good');
+      if (x.textContent === answer)x.classList.add('good');
     });
     store.save();
     decks.renderStats();
@@ -96,6 +129,7 @@
 
   Object.assign(quiz, {
     startQuiz,
+    startRelation,
     quizPriority,
     showQuiz,
     answerQuiz

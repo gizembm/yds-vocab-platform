@@ -90,6 +90,8 @@
     studyState.daily = true;
     playState.daily = false;
     studyState.scope = null;
+    store.data.lastView = { type: 'dailyStudy' };
+    store.save();
     $('home').hidden = true;
     $('play').hidden = true;
     $('study').hidden = false;

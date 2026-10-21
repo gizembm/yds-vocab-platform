@@ -45,6 +45,14 @@
       quizButton.textContent = 'Soru-Cevap';
       quizButton.onclick = () => quiz.startQuiz(all ? null : name);
       el.lastChild.append(quizButton);
+      for (const [relation, label] of [['synonyms', 'Eş Anlam Bul'], ['antonyms', 'Zıt Anlam Bul']]) {
+        const relationButton = document.createElement('button');
+        relationButton.className = 'play';
+        relationButton.textContent = label;
+        relationButton.disabled = !cards.some(card => String(card[relation] || '').trim());
+        relationButton.onclick = () => quiz.startRelation(all ? null : name, relation);
+        el.lastChild.append(relationButton);
+      }
       const sentenceButton = document.createElement('button');
       sentenceButton.className = 'play';
       sentenceButton.textContent = 'Cümle Tamamla';

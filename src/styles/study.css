@@ -60,16 +60,6 @@
 .face small {
   color: var(--mut);
 }
-.mn {
-  background: var(--peach);
-  color: var(--hard);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: .92rem;
-}
-.mn:empty {
-  display: none;
-}
 .spk {
   position: absolute;
   top: 12px;
