@@ -38,8 +38,10 @@
       if (!live.has(id))delete p.cards[id];
     });
     if (!Number.isInteger(p.dayIndex))p.dayIndex = p.session ? Math.max(0, daily.dateNumber(p.session.date) - daily.dateNumber(p.start)) : 0;
-    if (p.session && p.session.date !== date && gamesComplete(p.session)) {
-      p.dayIndex = (p.dayIndex || 0) + 1;
+    if (p.session && p.session.date !== date) {
+      // Calendar days advance the program even when the previous day's cards
+      // or games were left unfinished. Missed-day quotas accumulate by date.
+      p.dayIndex = Math.max(p.dayIndex || 0, daily.dateNumber(date) - daily.dateNumber(p.start));
       p.session = null;
     }
     if (!p.session) {

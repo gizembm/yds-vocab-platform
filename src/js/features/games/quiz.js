@@ -18,7 +18,11 @@
       card, due : i
     }));
     const resumeIndex = playState.quiz.list.findIndex(item => item.card.id === resumeId);
-    if (resumeIndex > 0)playState.quiz.list.push(...playState.quiz.list.splice(0, resumeIndex));
+    // Resume a card when it is equally or more urgent than the current lead;
+    // keep higher-priority mistakes at the front after a reload.
+    if (resumeIndex > 0 && quiz.quizPriority(playState.quiz.list[resumeIndex].card) >= quiz.quizPriority(playState.quiz.list[0].card)) {
+      playState.quiz.list.push(...playState.quiz.list.splice(0, resumeIndex));
+    }
     playState.quiz.step = 0;
     quiz.showQuiz();
   }
@@ -117,11 +121,13 @@
       const current = playState.quiz.list.shift();
       playState.quiz.step = Math.max(playState.quiz.step, current.due);
       // Repeat mistakes after two intervening questions, expanding the gap as recall improves.
-      const gap = !ok ? 3 : c.quizDifficulty > 0 ? 6 : c.quizCorrect === 1 ? Math.max(8, playState.quiz.list.length * 2) : Math.max(16, playState.quiz.list.length * 3);
+      const gap = !ok ? 2 : c.quizDifficulty > 0 ? 6 : c.quizCorrect === 1 ? Math.max(8, playState.quiz.list.length * 2) : Math.max(16, playState.quiz.list.length * 3);
       current.due = playState.quiz.step + gap;
       playState.quiz.list.push(current);
       playState.quiz.step++;
-      playState.quiz.list.sort((a, b) => a.due - b.due || quiz.quizPriority(b.card) - quiz.quizPriority(a.card));
+      // Keep insertion order for equal due steps so a mistake returns after
+      // the intended number of intervening questions.
+      playState.quiz.list.sort((a, b) => a.due - b.due);
       playState.quiz.timer = null;
       quiz.showQuiz();
     }, 1000);

@@ -92,7 +92,8 @@
   }
 
   function rateStudy(e) {
-    const q = e.target.dataset.q;
+    const button = e.target.closest ? e.target.closest('[data-q]') : e.target;
+    const q = button && button.dataset.q;
     if (!q)return;
     if (studyState.daily) {
       daily.rateDaily(q);
