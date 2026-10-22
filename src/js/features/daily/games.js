@@ -8,12 +8,15 @@
   const { study: studyState, play: playState } = globalThis.Vocab.session;
 
   function startDailyGame(mode) {
-    if (!['quiz', 'match', 'sentence'].includes(mode))return;
+    if (!['quiz', 'match', 'sentence', 'synonyms', 'antonyms'].includes(mode))return;
     if (daily.refreshDailyDay())return;
     const s = daily.ensureDaily();
     if (s.pending.length || !s.ids.length)return;
     if (mode === 'match' && s.ids.length < 2 || mode === 'quiz' && new Set(daily.dailyCards().map(c => c.tr)).size < 2)return;
-    const ids = mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id) : s.ids;
+    const relation = ['synonyms', 'antonyms'].includes(mode);
+    const ids = mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id)
+      : relation ? daily.dailyCards().filter(c => String(c[mode] || '').trim()).map(c => c.id) : s.ids;
+    if (relation && !ids.length)return;
     if (mode === 'sentence' && (!ids.length || new Set(store.allCards().map(c => sentence.englishKey(c.en))).size < 4))return;
     navigation.showPlay(mode, null);
     playState.daily = true;
@@ -24,15 +27,17 @@
     if (game.pending === null)game.pending = shuffle([...ids]);
     store.save();
     $('gameAgain').textContent = 'Turu yeniden başlat';
-    $('playTitle').textContent = mode === 'sentence' ? 'Günlük Cümle Tamamla' : mode === 'quiz' ? 'Günlük test' : 'Günlük eşleştirme';
+    document.getElementById('playTitle').textContent = mode === 'sentence' ? 'G\u00fcnl\u00fck C\u00fcmle Tamamla' : mode === 'quiz' ? 'G\u00fcnl\u00fck test' : mode === 'match' ? 'G\u00fcnl\u00fck e\u015fle\u015ftirme' : mode === 'synonyms' ? 'G\u00fcnl\u00fck E\u015f Anlam Bul' : 'G\u00fcnl\u00fck Z\u0131t Anlam Bul';
     if (mode === 'sentence')sentence.showSentence();
-    else if (mode === 'quiz')daily.dailyShowQuiz();
+    else if (mode !== 'match')daily.dailyShowQuiz();
     else daily.dailyBuildMatch();
   }
 
   function dailyGameStatus() {
     const s = store.data.program.session, game = s[playState.mode];
-    const total = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).length : s.ids.length;
+    const total = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).length
+      : ['synonyms', 'antonyms'].includes(playState.mode) ? daily.dailyCards().filter(c => String(c[playState.mode] || '').trim()).length : s.ids.length;
+    if ($('nextDailyDay'))$('nextDailyDay').hidden = !!s.pending.length || !(s.requiredGames || []).every(mode => s[mode]?.pending?.length === 0);
     $('playInfo').textContent = 'Günlük çalışma · ' + game.done.length + ' / ' + total + ' tamamlandı';
     $('playHint').textContent = game.pending.length
     ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : 'Bugün çalıştığın kelimeler. ') + 'Yanlışlar kart çalışmasına da geri döner.'
@@ -46,19 +51,20 @@
     clearTimeout(playState.match.timer);
     playState.match.timer = null;
     const s = store.data.program.session;
-    const ids = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id) : s.ids;
+    const ids = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id)
+      : ['synonyms', 'antonyms'].includes(playState.mode) ? daily.dailyCards().filter(c => String(c[playState.mode] || '').trim()).map(c => c.id) : s.ids;
     s[playState.mode] = {
       pending : shuffle([...ids]), done : []
     };
     store.save();
     if (playState.mode === 'sentence')sentence.showSentence();
-    else if (playState.mode === 'quiz')daily.dailyShowQuiz();
+    else if (playState.mode !== 'match')daily.dailyShowQuiz();
     else daily.dailyBuildMatch();
   }
 
   function dailyShowQuiz() {
     daily.dailyGameStatus();
-    const s = store.data.program.session, game = s.quiz;
+    const s = store.data.program.session, game = s[playState.mode];
     const c = daily.dailyCards().find(c => c.id === game.pending[0]), choices = $('quizChoices');
     choices.innerHTML = '';
     playState.quiz.locked = false;
@@ -68,19 +74,22 @@
     $('quizExample').textContent = c ? c.ex || '' : '';
     $('quizCat').textContent = c ? store.cardCat(c) : '';
     if (!c)return;
-    const wrong = shuffle([...new Set(daily.dailyCards().map(x => x.tr))].filter(tr => tr !== c.tr)).slice(0, 3);
-    shuffle([c.tr, ...wrong]).forEach(opt => {
+    const relation = ['synonyms', 'antonyms'].includes(playState.mode);
+    const terms = card => relation ? String(card[playState.mode] || '').split(/[;,/|]/).map(x => x.trim()).filter(Boolean) : [card.tr];
+    const correct = terms(c), answer = correct[0];
+    const wrong = shuffle([...new Set(daily.dailyCards().filter(x => x.id !== c.id).flatMap(terms))].filter(value => !correct.includes(value))).slice(0, 3);
+    shuffle([answer, ...wrong]).forEach(opt => {
       const button = document.createElement('button');
       button.textContent = opt;
-      button.onclick = () => daily.dailyAnswerQuiz(button, opt === c.tr, c);
+      button.onclick = () => daily.dailyAnswerQuiz(button, correct.includes(opt), c, answer);
       choices.append(button);
     });
   }
 
-  function dailyAnswerQuiz(button, ok, c) {
+  function dailyAnswerQuiz(button, ok, c, answer = c.tr) {
     if (daily.refreshDailyDay() || playState.quiz.locked)return;
     playState.quiz.locked = true;
-    const game = store.data.program.session.quiz, id = game.pending.shift();
+    const game = store.data.program.session[playState.mode], id = game.pending.shift();
     if (ok) {
       game.done.push(id);
       c.quizCorrect = (c.quizCorrect || 0) + 1;
@@ -93,9 +102,9 @@
       c.quizDifficulty = Math.min(8, (c.quizDifficulty || 0) + 2);
     }
     button.classList.add(ok ? 'good' : 'bad');
-    $('quizFeedback').textContent = ok ? 'Doğru!' : 'Doğru cevap: ' + c.tr;
+    $('quizFeedback').textContent = ok ? 'Doğru!' : 'Doğru cevap: ' + answer;
     [...$('quizChoices').children].forEach(b => {
-      if (b.textContent === c.tr)b.classList.add('good');
+      if (b.textContent === answer)b.classList.add('good');
     });
     store.save();
     decks.renderStats();

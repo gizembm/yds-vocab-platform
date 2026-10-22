@@ -24,6 +24,7 @@
   }
 
   function showPlay(mode, name) {
+    $('nextDailyDay').hidden = true;
     playState.daily = false;
     studyState.daily = false;
     $('gameAgain').textContent = 'Yeniden karıştır';

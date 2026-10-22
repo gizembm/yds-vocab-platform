@@ -8,12 +8,23 @@
   const { study: studyState, play: playState } = globalThis.Vocab.session;
 
   const REVIEW_DAYS = [1, 3, 7, 14, 30];
+  const GAME_MODES = ['quiz', 'match', 'sentence', 'synonyms', 'antonyms'];
+  const relationTerms = (card, relation) => String(card[relation] || '').split(/[;,/|]/).map(x => x.trim()).filter(Boolean);
+  function enabledGames(cards) {
+    return GAME_MODES.filter(mode => mode === 'sentence' ? sentence.sentenceCards(cards).length > 0
+      : mode === 'match' ? cards.length >= 2
+      : mode === 'quiz' ? new Set(cards.map(c => c.tr)).size >= 2
+      : new Set(cards.flatMap(c => relationTerms(c, mode))).size >= 2);
+  }
+  function gamesComplete(s) {
+    return !s.pending.length && (s.requiredGames || []).every(mode => s[mode]?.pending?.length === 0);
+  }
   const programDate = (time = Date.now()) => new Intl.DateTimeFormat('en-CA', {
     timeZone : 'Europe/Istanbul', year : 'numeric', month : '2-digit', day : '2-digit'
   }).format(time);
   const dateNumber = date => Date.parse(date + 'T00:00:00Z') / config.DAY;
   const plusDays = (date, days) => new Date((daily.dateNumber(date) + days) * config.DAY).toISOString().slice(0, 10);
-  const cycleOf = date => Math.floor((daily.dateNumber(date) - daily.dateNumber(store.data.program.start)) / 7);
+  const cycleOf = () => Math.floor((store.data.program.dayIndex || 0) / 7);
   const dailyCards = () => {
     const ids = new Set(store.data.program.session.ids);
     return store.allCards().filter(c => ids.has(c.id));
@@ -22,22 +33,39 @@
   function ensureDaily() {
     const p = store.data.program;
     if (!p)return null;
-    const date = daily.programDate(), cycle = daily.cycleOf(date), live = new Set(store.allCards().map(c => c.id));
+    const date = daily.programDate(), live = new Set(store.allCards().map(c => c.id));
     Object.keys(p.cards).forEach(id => {
       if (!live.has(id))delete p.cards[id];
     });
-    if (!p.session || p.session.date !== date) {
-      const fresh = (daily.dateNumber(date) - daily.dateNumber(p.start))%7 !== 6
+    if (!Number.isInteger(p.dayIndex))p.dayIndex = p.session ? Math.max(0, daily.dateNumber(p.session.date) - daily.dateNumber(p.start)) : 0;
+    if (p.session && p.session.date !== date && gamesComplete(p.session)) {
+      p.dayIndex = (p.dayIndex || 0) + 1;
+      p.session = null;
+    }
+    if (!p.session) {
+      const cycle = daily.cycleOf(date);
+      const fresh = (p.dayIndex % 7) !== 6
       ? store.allCards().filter(c => !p.cards[c.id]).slice(0, 20) : [];
       fresh.forEach(c => {
         p.cards[c.id] = {
           cycle, assigned : date, learned : false, stage : 0, due : null
         };
       });
-      const ids = store.allCards().filter(c => {
+      let ids = store.allCards().filter(c => {
         const state = p.cards[c.id];
         return state && (state.cycle === cycle || !state.learned || state.due <= date);
       }).map(c => c.id);
+      // Keep a useful review day when the pool is exhausted and every learned
+      // word is scheduled for a later date.
+      if (!ids.length && store.allCards().length) {
+        ids = [...store.allCards()]
+          .sort((a, b) => {
+            const aState = p.cards[a.id], bState = p.cards[b.id];
+            return String(aState?.due || aState?.assigned || '').localeCompare(String(bState?.due || bState?.assigned || ''));
+          })
+          .slice(0, 20)
+          .map(c => c.id);
+      }
       p.session = {
         date, ids, newIds : fresh.map(c => c.id), pending : [...ids], done : [], current : ids[0] || null,
         quiz : {
@@ -48,16 +76,31 @@
       };
     }
     const s = p.session;
+    if (!s.ids.length && store.allCards().length) {
+      s.ids = [...store.allCards()]
+        .sort((a, b) => {
+          const aState = p.cards[a.id], bState = p.cards[b.id];
+          return String(aState?.due || aState?.assigned || '').localeCompare(String(bState?.due || bState?.assigned || ''));
+        })
+        .slice(0, 20)
+        .map(c => c.id);
+      s.pending = [...s.ids];
+      s.done = [];
+      s.current = s.ids[0] || null;
+    }
+    const cards = daily.dailyCards();
+    s.requiredGames ||= enabledGames(cards);
+    for (const mode of GAME_MODES) if (!s[mode])s[mode] = { pending : null, done : [] };
     // Older saved programs have no sentence-game progress yet.
     if (!s.sentence)s.sentence = {
       pending : null, done : []
     };
     for (const key of ['ids', 'newIds', 'pending', 'done'])s[key] = s[key].filter(id => live.has(id));
-    for (const game of [s.quiz, s.match]) {
+    for (const game of GAME_MODES.map(mode => s[mode])) {
       if (game.pending)game.pending = game.pending.filter(id => live.has(id));
       game.done = game.done.filter(id => live.has(id));
     }
-    const sentenceIds = new Set(sentence.sentenceCards(daily.dailyCards()).map(c => c.id));
+    const sentenceIds = new Set(sentence.sentenceCards(cards).map(c => c.id));
     if (s.sentence.pending)s.sentence.pending = s.sentence.pending.filter(id => sentenceIds.has(id));
     s.sentence.done = s.sentence.done.filter(id => sentenceIds.has(id));
     store.save();
@@ -96,6 +139,18 @@
     $('play').hidden = true;
     $('study').hidden = false;
     study.showCard();
+  }
+
+  function advanceDailyDay() {
+    const p = store.data.program, current = daily.ensureDaily();
+    if (!p || !gamesComplete(current))return false;
+    p.dayIndex = (p.dayIndex || 0) + 1;
+    p.session = null;
+    daily.ensureDaily();
+    store.save();
+    daily.renderDaily();
+    daily.startDailyStudy();
+    return true;
   }
 
   function recordDailyActivity(points) {
@@ -152,6 +207,7 @@
     beginDaily,
     dailyQueue,
     startDailyStudy,
+    advanceDailyDay,
     recordDailyActivity,
     rateDaily,
     dailyMistake,

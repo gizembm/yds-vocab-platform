@@ -48,15 +48,15 @@ ilerlemesi aynı biçimde saklanır; bu düzenleme için veri göçü gerekmez.
 Veriyi değiştiren işlem, gerekli güncellemelerden sonra `store.save()` çağırır.
 
 Geçici çalışma kuyrukları ve zamanlayıcılar `session` içinde tutulur ve kayda
-yazılmaz. Günlük programın yenilemede devam etmesi gereken kuyrukları ise
-`store.data.program.session` içindedir. Bu iki oturum alanını birbirine karıştırma.
+yazılmaz. Günlük programın yenilemede ve gün değişiminde devam etmesi gereken oturum/gün sayacı bilgilerini ise
+`store.data.program.session` içinde; gün sayacı `store.data.program.dayIndex` alanındadır. Bu iki oturum alanını birbirine karıştırma.
 
 Günlük program dört dosyaya ayrılır:
 
 - `scheduler.js`: İstanbul tarihi, yeni kelime kotası, tekrar aralıkları,
   günlük kart çalışması ve unutulan kartın programa geri alınması.
 - `view.js`: günlük program özeti ve oyun düğmeleri.
-- `games.js`: günlük oyun turları, tamamlanma ve yeniden başlatma.
+- `games.js`: test, eşleştirme, cümle, eş ve zıt anlam turları; ilerleme ve yeniden başlatma.
 - `lifecycle.js`: tarih değişimini algılama; olay ve aralık bağlantıları
   `bootstrap.js` içinde yapılır.
 

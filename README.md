@@ -23,49 +23,13 @@ Dosya yuklerken sutun sirasi:
 Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Es Anlamli, Zit Anlamli
 ```
 
-## Günlük 20 kelime programı
+## G�nl�k 20 kelime program�
 
-Kelime listesini yükledikten sonra **Programı başlat** düğmesine bas. Başladığın
-gün 7 günlük döngünün ilk günüdür: ilk 6 gün 20 yeni kelime açılır; 7. gün
-yeni kelime eklenmeden döngünün tamamı tekrar edilir. Çalışma listesi hafta
-boyunca 20, 40, 60, 80, 100 ve 120 kelime olarak birikir. Kaçırdığın günlerin
-yeni kelimeleri birikmez. Gün sınırı Türkiye saatine göre hesaplanır.
+Program, her g�n 20 yeni kelime a�ar; yedinci g�n yeni kelime eklemeden o haftan�n kelimelerini tekrar eder. G�n, �stanbul saatine g�re belirlenir. G�n�n kart �al��mas� ve uygun oyunlar� (Test, E�le�tirme, C�mle Tamamla, E� Anlam Bul, Z�t Anlam Bul) tamamlanmadan yeni g�ne ge�ilmez. G�n de�i�ti�inde tamamlanmam�� �al��ma ayn� oturumdan devam eder. T�m g�revler bitince `Sonraki g�ne ge�` d��mesiyle yeni g�ne hemen ge�ebilir veya mevcut ekranda kalabilirsin. Oyunlar yaln�zca o turda bulunan ve ilgili alan� dolu kelimeler i�in sunulur; g�nl�k oyun ilerlemesi yenileme sonras�nda korunur.
 
-Kartları çevirip **Bilemedim**, **Zorlandım** veya **Öğrendim** seçeneğini kullan.
-Öğrenmediğin kart iki başka karttan sonra yeniden gelir. Günün bütün kartlarını
-tamamlayınca aynı kelimelerle **Test**, **Eşleştirme** ve **Cümle Tamamla** turları açılır. Oyunlardaki
-yanlışlar yeniden kart çalışmasına döner; doğru oyun cevabı kartı öğrenilmiş saymaz.
+Kartlarda Bilemedim, Zorland�m veya ��rendim se�enekleri kullan�l�r. Oyunlardaki yanl��lar kelimeyi kart �al��mas�na geri ekler. Sonraki g�nler yeni kelime kotas� dolana kadar birikir; ��renilmemi� kelimeler ve zaman� gelen tekrarlar da programa dahil edilir. Serbest kategori �al��mas� ve oyunlar g�nl�k programdan ba��ms�zd�r.
 
-**Cümle Tamamla**, dosyadaki örnek İngilizce cümlede hedef kelimenin geçtiği
-yerleri boşluk yapar ve dört farklı İngilizce seçenek sunar. Kelimeyi içeren
-örnek cümlesi olmayan kartlar bu oyunda sorulmaz. Seçenekler önce seçilen
-kategoriden veya günlük kelimelerden alınır; eksik kalırsa diğer kategorilerden
-tamamlanır. Bu nedenle tüm listede en az dört farklı İngilizce kelime gerekir.
-Günlük tur ilerlemesi kaydedilir; yanlışlar iki başka sorudan sonra yeniden gelir.
-
-Eski döngülerden öğrenilmeyenler her gün gelir. Öğrenilen kelimeler 1, 3, 7, 14
-ve 30 günlük aralıklarla tekrar edilir; sonrasında 30 gün arayla devam eder.
-Kelime havuzu tükenirse tekrarlar sürer. Sonradan yüklenen kelimeler sonraki
-yeni kelime gününde programa alınır. Serbest kategori çalışması ve oyunlar
-günlük programdan bağımsız kullanılabilir.
-
-Program, kartlar ve oyun ilerlemesi aynı tarayıcının `localStorage` alanında
-saklanır. Sayfayı yenilemek günlük kotayı değiştirmez. Tarayıcı verilerini
-silmek bu ilerlemeyi de siler.
-
-Testleri çalıştırmak için (Node.js):
-
-```text
-npm test
-```
-
-PowerShell, `npm.ps1` çalıştırmayı engelliyorsa `npm.cmd test` kullanabilirsin.
-Paket kurulumu gerekmez. Doğrudan Node.js ile çalıştırmak için:
-
-```text
-node --test tests/*.test.cjs
-```
-
+Program, kartlar ve oyun ilerlemesi ayn� taray�c�n�n `localStorage` alan�nda saklan�r. Taray�c� verilerini silmek bu ilerlemeyi de siler.
 ## Proje yapısı
 
 ```text

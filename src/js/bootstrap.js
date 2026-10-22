@@ -35,6 +35,7 @@
   };
   $('programStart').onclick = app.daily.beginDaily;
   $('programStudy').onclick = app.daily.startDailyStudy;
+  $('nextDailyDay').onclick = app.daily.advanceDailyDay;
   $('dailyReturn').onclick = app.navigation.showHome;
 
   app.decks.renderDecks();
