@@ -10,7 +10,7 @@ CSV veya XML ile kelime listesi yukleyip calisma kartlari, eslestirme ve soru-ce
 - Telaffuz destegi
 - Eslestirme oyunu
 - Coktan secmeli soru-cevap oyunu
-- Dört İngilizce seçenekli Cümle Tamamla oyunu (tüm kategorilerde ve günlük programda)
+- DÃ¶rt Ä°ngilizce seÃ§enekli CÃ¼mle Tamamla oyunu (tÃ¼m kategorilerde ve gÃ¼nlÃ¼k programda)
 - Tarayicida localStorage ile veri saklama
 
 ## Kullanim
@@ -23,48 +23,48 @@ Dosya yuklerken sutun sirasi:
 Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Es Anlamli, Zit Anlamli
 ```
 
-## G�nl�k 20 kelime program�
+## Günlük 20 kelime programı
 
-Program, her g�n 20 yeni kelime a�ar; yedinci g�n yeni kelime eklemeden o haftan�n kelimelerini tekrar eder. G�n, �stanbul saatine g�re belirlenir. G�n�n kart �al��mas� ve uygun oyunlar� (Test, E�le�tirme, C�mle Tamamla, E� Anlam Bul, Z�t Anlam Bul) tamamlanmadan yeni g�ne ge�ilmez. G�n de�i�ti�inde tamamlanmam�� �al��ma ayn� oturumdan devam eder. T�m g�revler bitince `Sonraki g�ne ge�` d��mesiyle yeni g�ne hemen ge�ebilir veya mevcut ekranda kalabilirsin. Oyunlar yaln�zca o turda bulunan ve ilgili alan� dolu kelimeler i�in sunulur; g�nl�k oyun ilerlemesi yenileme sonras�nda korunur.
+Program, her gün 20 yeni kelime açar; yedinci gün yeni kelime eklemeden o haftanın kelimelerini tekrar eder. Gün, İstanbul saatine göre belirlenir. Günün kart çalışması ve uygun oyunları (Test, Eşleştirme, Cümle Tamamla, Eş Anlam Bul, Zıt Anlam Bul) tamamlanmadan yeni güne geçilmez. Gün değiştiğinde tamamlanmamış çalışma aynı oturumdan devam eder. Tüm görevler bitince `Sonraki güne geç` düğmesiyle yeni güne hemen geçebilir veya mevcut ekranda kalabilirsin. Oyunlar yalnızca o turda bulunan ve ilgili alanı dolu kelimeler için sunulur; günlük oyun ilerlemesi yenileme sonrasında korunur.
 
-Kartlarda Bilemedim, Zorland�m veya ��rendim se�enekleri kullan�l�r. Oyunlardaki yanl��lar kelimeyi kart �al��mas�na geri ekler. Sonraki g�nler yeni kelime kotas� dolana kadar birikir; ��renilmemi� kelimeler ve zaman� gelen tekrarlar da programa dahil edilir. Serbest kategori �al��mas� ve oyunlar g�nl�k programdan ba��ms�zd�r.
+Kartlarda Bilemedim, Zorlandım veya Öğrendim seçenekleri kullanılır. Oyunlardaki yanlışlar kelimeyi kart çalışmasına geri ekler. Sonraki günler yeni kelime kotası dolana kadar birikir; öğrenilmemiş kelimeler ve zamanı gelen tekrarlar da programa dahil edilir. Serbest kategori çalışması ve oyunlar günlük programdan bağımsızdır.
 
-Program, kartlar ve oyun ilerlemesi ayn� taray�c�n�n `localStorage` alan�nda saklan�r. Taray�c� verilerini silmek bu ilerlemeyi de siler.
-## Proje yapısı
+Program, kartlar ve oyun ilerlemesi aynı tarayıcının `localStorage` alanında saklanır. Tarayıcı verilerini silmek bu ilerlemeyi de siler.
+## Proje yapÄ±sÄ±
 
 ```text
-index.html                 # Ekran iskeleti ve sıralı script yüklemesi
+index.html                 # Ekran iskeleti ve sÄ±ralÄ± script yÃ¼klemesi
 src/
   js/
-    core/                  # Ayarlar, yardımcılar, kalıcı veri, geçici oturum
+    core/                  # Ayarlar, yardÄ±mcÄ±lar, kalÄ±cÄ± veri, geÃ§ici oturum
     features/
-      audio/               # İngilizce seslendirme
-      daily/               # Günlük planlama, görünüm, oyunlar, gün değişimi
+      audio/               # Ä°ngilizce seslendirme
+      daily/               # GÃ¼nlÃ¼k planlama, gÃ¶rÃ¼nÃ¼m, oyunlar, gÃ¼n deÄŸiÅŸimi
       decks/               # Kategori listesi, istatistikler, kategori ekleme
-      games/               # Eşleştirme, soru-cevap, cümle tamamlama
-      import/              # CSV/XML okuma ve yükleme sonucu
-      navigation/          # Ana ekran ve oyun ekranı geçişleri
-      study/               # Kartlar ve serbest Leitner çalışması
-    bootstrap.js           # Olay bağlantıları ve ilk ekranın açılması
+      games/               # EÅŸleÅŸtirme, soru-cevap, cÃ¼mle tamamlama
+      import/              # CSV/XML okuma ve yÃ¼kleme sonucu
+      navigation/          # Ana ekran ve oyun ekranÄ± geÃ§iÅŸleri
+      study/               # Kartlar ve serbest Leitner Ã§alÄ±ÅŸmasÄ±
+    bootstrap.js           # Olay baÄŸlantÄ±larÄ± ve ilk ekranÄ±n aÃ§Ä±lmasÄ±
   styles/
-    main.css               # Stil giriş noktası ve yükleme sırası
-    tokens.css             # Tema renkleri ve ortak tasarım değişkenleri
-    base.css               # Sayfa düzeni ve ortak bileşenler
-    study.css              # Kart çalışma ekranı
-    games.css              # Oyun ekranları ve cevap durumları
-    import.css             # Yükleme sonucu penceresi
-    responsive.css         # Mobil görünüm ve hareket azaltma tercihleri
+    main.css               # Stil giriÅŸ noktasÄ± ve yÃ¼kleme sÄ±rasÄ±
+    tokens.css             # Tema renkleri ve ortak tasarÄ±m deÄŸiÅŸkenleri
+    base.css               # Sayfa dÃ¼zeni ve ortak bileÅŸenler
+    study.css              # Kart Ã§alÄ±ÅŸma ekranÄ±
+    games.css              # Oyun ekranlarÄ± ve cevap durumlarÄ±
+    import.css             # YÃ¼kleme sonucu penceresi
+    responsive.css         # Mobil gÃ¶rÃ¼nÃ¼m ve hareket azaltma tercihleri
 tests/
-  helpers/                 # HTML'deki sıraya göre uygulama yükleyicisi
-  architecture.test.cjs    # Başlangıç, dosya yolları ve modül bağlantıları
-  daily.test.cjs           # Günlük program ve cümle tamamlama davranışları
-  matching.test.cjs        # Eşleştirme, test ve içe aktarma davranışları
+  helpers/                 # HTML'deki sÄ±raya gÃ¶re uygulama yÃ¼kleyicisi
+  architecture.test.cjs    # BaÅŸlangÄ±Ã§, dosya yollarÄ± ve modÃ¼l baÄŸlantÄ±larÄ±
+  daily.test.cjs           # GÃ¼nlÃ¼k program ve cÃ¼mle tamamlama davranÄ±ÅŸlarÄ±
+  matching.test.cjs        # EÅŸleÅŸtirme, test ve iÃ§e aktarma davranÄ±ÅŸlarÄ±
 docs/
-  architecture.md          # Modül sözleşmeleri ve geliştirme rehberi
+  architecture.md          # ModÃ¼l sÃ¶zleÅŸmeleri ve geliÅŸtirme rehberi
 ```
 
-Uygulama için derleme, sunucu veya `npm install` gerekmez. `index.html` doğrudan
-tarayıcıda açılabilir. Mevcut `flashcards_v1` kayıt anahtarı ve veri biçimi korunur.
-CSV ayrıştırma için kullanılan PapaParse CDN bağlantısı önceki gibi devam eder.
+Uygulama iÃ§in derleme, sunucu veya `npm install` gerekmez. `index.html` doÄŸrudan
+tarayÄ±cÄ±da aÃ§Ä±labilir. Mevcut `flashcards_v1` kayÄ±t anahtarÄ± ve veri biÃ§imi korunur.
+CSV ayrÄ±ÅŸtÄ±rma iÃ§in kullanÄ±lan PapaParse CDN baÄŸlantÄ±sÄ± Ã¶nceki gibi devam eder.
 
-Yeni geliştirmelere başlamadan önce [mimari rehberini](docs/architecture.md) oku.
+Yeni geliÅŸtirmelere baÅŸlamadan Ã¶nce [mimari rehberini](docs/architecture.md) oku.
