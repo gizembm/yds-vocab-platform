@@ -31,7 +31,7 @@ eklemek gerekir. Klasörleri tarayan otomatik bir çalışma zamanı yükleyicis
 | --- | --- |
 | `Vocab.config` | Kayıt anahtarı, gün uzunluğu ve serbest Leitner aralıkları |
 | `Vocab.utils` | DOM öğesi bulma, İstanbul tarih biçimi, karıştırma |
-| `Vocab.store` | Kalıcı `data`, `save()`, kategori ve kart sorguları |
+| `Vocab.store` | Kalıcı `data`, `save()`, kategori ve kart sorguları, hata puanı ve `Zor kelimelerim` sanal kategorisi (`config.HARD_SCOPE`) |
 | `Vocab.session.study` | Etkin kategori, çalışma kuyruğu, kart konumu ve günlük çalışma bayrağı |
 | `Vocab.session.play` | Oyun modu, kapsamı, geçici kuyruklar, seçimler ve zamanlayıcılar |
 | `Vocab.decks` | Kategori ekleme/listeleme/silme ve istatistik çizimi |
@@ -41,11 +41,15 @@ eklemek gerekir. Klasörleri tarayan otomatik bir çalışma zamanı yükleyicis
 | `Vocab.matching`, `Vocab.quiz`, `Vocab.sentence` | Serbest oyunlar; günlük modda günlük programla bağlantı |
 | `Vocab.daily` | Günlük programın planlama, görünüm, oyun ve gün değişimi işlemleri |
 | `Vocab.audio` | Tarayıcı seslendirme işlemi |
+| `Vocab.shortcuts` | Kart ve çoktan seçmeli oyun klavye kısayolları |
+| `Vocab.words` | Kart ekranından tek kelime düzenleme/silme |
+| `Vocab.backup` | JSON yedek indirme, doğrulama, geri yükleme ve kalıcı depolama izni |
+| `Vocab.progress` | Programdaki aşamadan kelime seviyesi (Yeni/Öğreniliyor/Pekişiyor/Öğrenildi) ve Öğrendiklerim paneli |
 
 `store.data`, önceki `S` nesnesinin yerini alır. `localStorage` anahtarı hâlâ
 `flashcards_v1` değeridir. Kategoriler, puanlar, seri, son kart ve `program`
 ilerlemesi aynı biçimde saklanır; bu düzenleme için veri göçü gerekmez.
-Veriyi değiştiren işlem, gerekli güncellemelerden sonra `store.save()` çağırır.
+Veriyi değiştiren işlem, gerekli güncellemelerden sonra `store.save()` çağırır. Tarayıcıda aynı kullanıcı işlemindeki kayıtlar tek yazmaya birleştirilir (mikro görev); `pagehide` olayında `store.flush()` bekleyen yazmayı hemen yapar. `queueMicrotask` olmayan ortamlarda (Node testleri) `save()` eşzamanlı yazar.
 
 Geçici çalışma kuyrukları ve zamanlayıcılar `session` içinde tutulur ve kayda
 yazılmaz. Günlük programın yenilemede ve gün değişiminde devam etmesi gereken oturum/gün sayacı bilgilerini ise
@@ -53,14 +57,17 @@ yazılmaz. Günlük programın yenilemede ve gün değişiminde devam etmesi ger
 
 Günlük program dört dosyaya ayrılır:
 
-- `scheduler.js`: İstanbul tarihi, yeni kelime kotası, tekrar aralıkları,
-  günlük kart çalışması ve unutulan kartın programa geri alınması.
+- `scheduler.js`: İstanbul tarihi, yeni kelime kotası, tekrar seçimi ve üst sınırı
+  (`pickReviews`), tekrar aralıkları, günlük kart çalışması, unutulan kartın programa
+  geri alınması ve günlük oyunların havuzu/uygunluğu (`gamePool`, `gameIds`,
+  `gameAvailable`, `requiredGames`, `optionalGames`). Eş/zıt anlam oyunları `OPTIONAL_GAMES` listesindedir ve günü bitirmek için gerekmez. Oyun uygunluk kuralı yalnızca `gameAvailable`
+  içinde tanımlıdır; görünüm ve oyun dosyaları bu fonksiyonu kullanır.
 - `view.js`: günlük program özeti ve oyun düğmeleri.
 - `games.js`: test, eşleştirme, cümle, eş ve zıt anlam turları; ilerleme ve yeniden başlatma.
 - `lifecycle.js`: tarih değişimini algılama; olay ve aralık bağlantıları
   `bootstrap.js` içinde yapılır.
 
-Serbest Leitner kutuları ile günlük programın öğrenme durumu ayrı tutulur.
+Kelimenin öğrenme durumu tek yerde tutulur: `store.data.program.cards[id]` (`learned`, `stage`, `due`). Serbest Leitner kutuları (`box`/`due` kart üzerinde) yalnızca serbest çalışmanın sırasını belirler. Durumu değiştiren kurallar `scheduler.js` içindedir: `rateDaily` (kart puanlaması), `dailyMistake` (günlük oyun hatası: bir basamak düşür + karta geri gönder), `registerMistake` (serbest mod hatası: yalnızca öğrenilmiş kelimeyi bir basamak düşürüp yarına al) ve `demote`. Serbest moddaki doğru cevaplar takvimi değiştirmez.
 Oyun ekranından çıkarken bekleyen zamanlayıcıları temizleme davranışı korunmalıdır.
 
 ## Bir özelliği değiştirme veya ekleme
@@ -75,7 +82,7 @@ Oyun ekranından çıkarken bekleyen zamanlayıcıları temizleme davranışı k
    önce yükle. Başlangıçta gereken bağımlılıklar daha önce yüklenmelidir.
 5. Statik DOM olaylarını `bootstrap.js` içinde bağla. Dinamik oluşturulan
    kategori/cevap düğmelerinin olayları ilgili çizim fonksiyonunda kalır.
-6. Stilleri uygun özellik stiline ekle. Tema renkleri `tokens.css`, ortak
+6. Stilleri uygun özellik stiline ekle. Tema renkleri ve yazı tipi `tokens.css` içindedir; stil dosyalarına sabit renk kodu yazma, token kullan. Ortak
    kontroller `base.css`, mobil ve hareket tercihleri `responsive.css` içindedir.
 7. Davranış testini ilgili test dosyasına ekle ve `npm test` çalıştır.
 

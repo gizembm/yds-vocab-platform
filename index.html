@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kelime Kartları</title>
 <link rel="stylesheet" href="src/styles/main.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
 </head>
 <body>
 <header>
@@ -14,12 +17,21 @@
 <main>
   <section id="home">
     <div class="panel daily-panel">
-      <span class="eyebrow">HER GÜN BİR ADIM</span>
       <h2>Günlük 20 kelime programı</h2>
       <p id="programSummary" aria-live="polite"></p>
+      <div id="programProgress" class="progress" role="progressbar" aria-label="Bugünkü kartlar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span></span></div>
       <button id="programStart">Programı başlat</button>
       <button id="programStudy" hidden>Günlük çalışmaya devam et</button>
       <div id="programActions" class="daily-actions"></div>
+    </div>
+    <div id="masteryPanel" class="panel mastery-panel" hidden>
+      <h2>Öğrendiklerim</h2>
+      <div id="masteryBar" class="mastery-bar" role="img"></div>
+      <dl id="masteryLevels" class="mastery-levels"></dl>
+      <details id="masteryDetails" class="hard-list mastery-list" hidden>
+        <summary id="masterySummary">Öğrenilen kelimeleri gör</summary>
+        <ul id="masteryList"></ul>
+      </details>
     </div>
     <h2 class="section-heading">Kategorilerin</h2>
     <div id="decks"></div>
@@ -29,9 +41,16 @@
       <input type="file" id="file" accept=".csv,.xml,.txt" aria-label="Kelime listesi dosyası">
       <div class="row"><input id="newDeck" placeholder="Yeni kategori adı" aria-label="Yeni kategori adı"><button id="addDeck">Kategori ekle</button></div>
     </div>
+    <div class="panel backup-panel">
+      <h2>Yedekleme</h2>
+      <p class="hint">İlerlemen yalnızca bu tarayıcıda saklanır. Kaybetmemek veya telefonla bilgisayar arasında taşımak için yedek indir, diğer cihazda yükle.</p>
+      <p id="backupStatus" class="mut" aria-live="polite"></p>
+      <div class="row"><button id="backupExport" type="button">Yedeği indir</button><button id="backupImport" class="ghost" type="button">Yedeği yükle</button></div>
+      <input type="file" id="backupFile" accept=".json,application/json" hidden aria-label="Yedek dosyası">
+    </div>
   </section>
   <section id="study" hidden>
-    <div class="bar"><button class="ghost" id="back">← Kategoriler</button><span id="info"></span></div>
+    <div class="bar"><button class="ghost" id="back">← Kategoriler</button><span id="info"></span><button class="ghost" id="editCard" type="button" title="Bu kelimeyi düzenle">✎ Düzenle</button></div>
     <div id="empty" hidden class="panel"><p>Şu an tekrar edilecek kart yok. 🎉</p><button id="all">Hepsini çalış</button></div>
     <div id="dailyStudyDone" hidden class="panel">
       <h2>Günlük kartlar tamamlandı</h2>
@@ -53,6 +72,7 @@
         <button data-q="hard" class="b-hard">Zorlandım</button>
         <button data-q="know" class="b-know">Öğrendim</button>
       </div>
+      <p class="kbd-hint hint">Kısayollar: <kbd>Boşluk</kbd> çevir · <kbd>1</kbd> Bilemedim · <kbd>2</kbd> Zorlandım · <kbd>3</kbd> Öğrendim · <kbd>←</kbd> <kbd>→</kbd> gezin</p>
     </div>
   </section>
   <section id="play" hidden>
@@ -69,6 +89,7 @@
         </div>
         <div id="quizChoices" class="quiz-choices"></div>
         <p id="quizFeedback" class="feedback" role="status" aria-live="polite"></p>
+        <p class="kbd-hint hint">Kısayol: şıkları <kbd>1</kbd>–<kbd>4</kbd> tuşlarıyla seç.</p>
       </div>
       <div class="game-actions">
         <button id="gameAgain">Yeniden karıştır</button>
@@ -93,6 +114,24 @@
   </section>
   <form method="dialog" class="game-actions"><button autofocus>Tamam</button></form>
 </dialog>
+<dialog id="wordEditor" class="import-result word-editor" aria-labelledby="wordEditorTitle">
+  <form id="wordForm" novalidate>
+    <h2 id="wordEditorTitle">Kelimeyi düzenle</h2>
+    <p id="wordEditorCat" class="mut"></p>
+    <label>İngilizce kelime<input id="editEn" lang="en" autocomplete="off"></label>
+    <label>Türkçe karşılığı<input id="editTr" autocomplete="off"></label>
+    <label>Örnek cümle<textarea id="editEx" rows="2" lang="en"></textarea></label>
+    <label>Cümle çevirisi<textarea id="editExTr" rows="2"></textarea></label>
+    <label><span>Eş anlamlılar <small class="mut">(virgülle ayır)</small></span><input id="editSyn" lang="en" autocomplete="off"></label>
+    <label><span>Zıt anlamlılar <small class="mut">(virgülle ayır)</small></span><input id="editAnt" lang="en" autocomplete="off"></label>
+    <p id="wordError" class="feedback bad" role="alert"></p>
+    <div class="game-actions editor-actions">
+      <button type="button" id="wordDelete" class="del">Kelimeyi sil</button>
+      <button type="button" id="wordCancel" class="ghost">Vazgeç</button>
+      <button type="submit" id="wordSave">Kaydet</button>
+    </div>
+  </form>
+</dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <!-- Core, feature definitions, then bootstrap. Classic scripts preserve file:// support. -->
 <script src="src/js/core/config.js"></script>
@@ -111,6 +150,10 @@
 <script src="src/js/features/daily/view.js"></script>
 <script src="src/js/features/daily/games.js"></script>
 <script src="src/js/features/daily/lifecycle.js"></script>
+<script src="src/js/features/shortcuts/shortcuts.js"></script>
+<script src="src/js/features/words/editor.js"></script>
+<script src="src/js/features/backup/backup.js"></script>
+<script src="src/js/features/progress/mastery.js"></script>
 <script src="src/js/bootstrap.js"></script>
 </body>
 </html>

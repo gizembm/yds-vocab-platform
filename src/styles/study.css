@@ -32,7 +32,7 @@
 }
 .back {
   transform: rotateY(180deg);
-  background: #F0F4EC;
+  background: var(--back);
 }
 .face>* {
   flex-shrink: 0;
@@ -45,12 +45,18 @@
   width: 100%;
   text-align: left;
 }
+/* The signature: a pastel highlighter stroke under the word being learned. */
 #en {
-  font-size: clamp(1.8rem,5vw,2.65rem);
+  display: inline;
+  font-size: clamp(1.8rem,5vw,2.6rem);
   font-weight: 700;
   margin: 16px 0;
+  padding: 0 .12em;
   overflow-wrap: anywhere;
-  letter-spacing: -.035em;
+  letter-spacing: -.02em;
+  background: linear-gradient(transparent 55%, var(--highlight) 55%, var(--highlight) 90%, transparent 90%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 #tr {
   font-size: 1.65rem;
@@ -86,17 +92,17 @@
 .b-miss {
   background: var(--rose);
   color: var(--miss);
-  border-color: #DDBDB8;
+  border-color: var(--miss-line);
 }
 .b-hard {
   background: var(--peach);
   color: var(--hard);
-  border-color: #DECAA9;
+  border-color: var(--hard-line);
 }
 .b-know {
   background: var(--sage);
   color: var(--know);
-  border-color: #B3CAB2;
+  border-color: var(--know-line);
 }
 .card-nav {
   display: flex;

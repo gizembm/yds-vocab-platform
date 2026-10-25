@@ -109,6 +109,7 @@
       $('quizFeedback').classList.add('good');
     } else {
       c.quizDifficulty = Math.min(8, (c.quizDifficulty || 0) + 2);
+      daily.registerMistake(c.id);
       $('quizFeedback').textContent = 'Doğru cevap: ' + answer;
       $('quizFeedback').classList.add('bad');
     }

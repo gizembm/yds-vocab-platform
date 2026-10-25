@@ -27,15 +27,23 @@
   .quiz-choices {
     grid-template-columns: 1fr;
   }
-  .deck div:last-child,.daily-actions {
+  .deck div:last-child,.deck-actions,.daily-actions {
     display: grid;
     grid-template-columns: 1fr;
   }
-  .deck div:last-child button,.daily-actions button {
+  .deck div:last-child button,.deck-actions button,.daily-actions button {
     width: 100%;
   }
   .deck button.del {
     margin-left: 0;
+  }
+  /* Games share two columns so a category stays short; the main action and delete span both. */
+  .deck div:last-child,.deck-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .deck div:last-child button:first-child,.deck-actions button:first-child,.deck button.del {
+    grid-column: 1 / -1;
   }
   .daily-actions p {
     min-width: 0;

@@ -37,6 +37,19 @@
   $('programStudy').onclick = app.daily.startDailyStudy;
   $('nextDailyDay').onclick = app.daily.advanceDailyDay;
   $('dailyReturn').onclick = app.navigation.showHome;
+  $('editCard').onclick = () => app.words.openEditor();
+  $('wordForm').onsubmit = event => {
+    event.preventDefault();
+    app.words.saveEdit();
+  };
+  $('wordCancel').onclick = app.words.closeEditor;
+  $('wordDelete').onclick = app.words.deleteEdited;
+  $('backupExport').onclick = app.backup.exportBackup;
+  $('backupImport').onclick = () => $('backupFile').click();
+  $('backupFile').onchange = event => {
+    if (event.target.files[0]) app.backup.importBackup(event.target.files[0]);
+    event.target.value = '';
+  };
 
   app.decks.renderDecks();
   const lastView = app.store.data.lastView;
@@ -61,6 +74,9 @@
   }
 
   if (typeof window !== 'undefined') {
+    document.addEventListener('keydown', app.shortcuts.handleKey);
+    window.addEventListener('pagehide', app.store.flush);
+    app.backup.requestPersistence();
     window.addEventListener('focus', app.daily.refreshDailyDay);
     document.addEventListener('visibilitychange', app.daily.refreshDailyDay);
     setInterval(app.daily.refreshDailyDay, 1000);

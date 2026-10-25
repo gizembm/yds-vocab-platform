@@ -7,13 +7,13 @@
   border-radius: 20px;
   background: var(--card);
   color: var(--ink);
-  box-shadow: 0 20px 60px rgba(41,59,52,.15);
+  box-shadow: 0 20px 60px rgba(31,42,68,.18);
 }
 .import-result[open] {
   animation: appear 200ms ease-out;
 }
 .import-result::backdrop {
-  background: rgba(41,59,52,.3);
+  background: var(--scrim);
 }
 .import-result h2 {
   font-size: 1.2rem;

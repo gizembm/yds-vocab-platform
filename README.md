@@ -23,13 +23,48 @@ Dosya yuklerken sutun sirasi:
 Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Es Anlamli, Zit Anlamli
 ```
 
-## G�nl�k 20 kelime program�
+## Günlük 20 kelime programı
 
-Program, her g�n 20 yeni kelime a�ar; yedinci g�n yeni kelime eklemeden o haftan�n kelimelerini tekrar eder. G�n, �stanbul saatine g�re belirlenir. G�n�n kart �al��mas� ve uygun oyunlar� (Test, E�le�tirme, C�mle Tamamla, E� Anlam Bul, Z�t Anlam Bul) tamamlanmadan yeni g�ne ge�ilmez. G�n de�i�ti�inde tamamlanmam�� �al��ma ayn� oturumdan devam eder. T�m g�revler bitince `Sonraki g�ne ge�` d��mesiyle yeni g�ne hemen ge�ebilir veya mevcut ekranda kalabilirsin. Oyunlar yaln�zca o turda bulunan ve ilgili alan� dolu kelimeler i�in sunulur; g�nl�k oyun ilerlemesi yenileme sonras�nda korunur.
+Gün, İstanbul saatine göre belirlenir. 1–6. günlerde her gün 20 yeni kelime açılır; 7. gün yeni kelime eklenmez ve o haftanın kelimeleri tekrar edilir.
 
-Kartlarda Bilemedim, Zorland�m veya ��rendim se�enekleri kullan�l�r. Oyunlardaki yanl��lar kelimeyi kart �al��mas�na geri ekler. Sonraki g�nler yeni kelime kotas� dolana kadar birikir; ��renilmemi� kelimeler ve zaman� gelen tekrarlar da programa dahil edilir. Serbest kategori �al��mas� ve oyunlar g�nl�k programdan ba��ms�zd�r.
+Bir günün kartları şu sırayla gelir:
 
-Program, kartlar ve oyun ilerlemesi ayn� taray�c�n�n `localStorage` alan�nda saklan�r. Taray�c� verilerini silmek bu ilerlemeyi de siler.
+1. Unutulan (Bilemedim/Zorlandım denmiş) kelimeler
+2. Bir önceki çalışma gününün yeni kelimeleri
+3. Tekrar zamanı gelmiş kelimeler (en çok geciken önce)
+4. 7. günde haftanın kalan kelimeleri
+5. Bugünün 20 yeni kelimesi
+
+Tekrar kartları günde en çok 60 tanedir; fazlası sonraki güne kalır. Zamanı gelen tekrarlar bu sınıra sığmıyorsa o gün yeni kelime açılmaz ve boşalan yer tekrarlara verilir (günde en çok 80 kart). 7. günde de en çok 80 kart gelir. Öğrenilen kelime 1, 3, 7, 14 ve 30 gün aralıklarla geri gelir. Puanlamalar:
+
+- `Öğrendim`: Yeni kelime 1 günlük aralıkla başlar; zamanı gelmiş bir tekrar bir sonraki basamağa geçer. Zamanı gelmemiş kelimede (örneğin 7. gün tekrarında) takvim değişmez.
+- `Zorlandım`: Yeni kelime öğrenilmiş sayılır ve bugün bir kez daha gösterilir; tekrar kelimesi bir basamak düşer ve yarın gelir.
+- `Bilemedim`: Kelime sıfırlanır ve bugün tekrar sorulur.
+
+Günlük oyunlarda yanlış yapılan kelime bir basamak düşer, yarın tekrar gelir ve bugün kartla yeniden çalışılır. Eşleştirmede yalnızca seçilen İngilizce kelime hatalı sayılır. Serbest çalışma ve serbest oyunlardaki hatalar, programda öğrenilmiş bir kelimeyi bir basamak düşürüp yarınki tekrara ekler; serbest moddaki doğru cevaplar takvimi değiştirmez.
+
+Kartlar bitince günün oyunları açılır. Oyunlar yalnızca bugünün yeni kelimeleri ve kartlarda zorlandığın kelimelerle oynanır; eski tekrarlar sadece kartla geçilir. Oyunlardaki yanlışlar kelimeyi kart çalışmasına geri ekler. Eş Anlam Bul ve Zıt Anlam Bul isteğe bağlıdır. Kartlar ve zorunlu oyunlar (Test, Eşleştirme, Cümle Tamamla) bitmeden yeni güne geçilmez; hepsi bitince `Sonraki güne geç` ile hemen geçebilirsin. Serbest kategori çalışması ve oyunlar günlük programın tekrar takvimini değiştirmez.
+
+## Öğrendiklerim
+
+Ana ekrandaki panel kelimeleri dört seviyede gösterir: `Yeni` (programa girmedi), `Öğreniliyor` (ilk tekrarını bekliyor), `Pekişiyor` (3, 7 ve 14 günlük basamaklarda) ve `Öğrenildi` (14 günlük tekrarı da bildin, artık 30 günde bir gelir). Öğrenilen kelimeler bir sonraki tekrar tarihleriyle listelenir.
+
+## Zor kelimelerim
+
+Kartlarda ve oyunlarda yapılan her hata kelimenin hata puanını artırır, doğru cevaplar azaltır. Puanı en yüksek 40 kelime ana ekranda `Zor kelimelerim` adlı sanal kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
+
+## Kısayollar (masaüstü)
+
+`Boşluk` kartı çevirir, `1` Bilemedim, `2` Zorlandım, `3` Öğrendim, `←`/`→` kartlar arasında gezinir. Oyunlarda şıklar `1`–`4` ile seçilir.
+
+## Kelime düzenleme
+
+Kart ekranındaki `✎ Düzenle` ile kelimenin İngilizcesini, çevirisini, örnek cümlesini ve eş/zıt anlamlılarını düzeltebilir veya kelimeyi silebilirsin.
+
+## Veriler ve yedekleme
+
+Kelimeler ve bütün ilerleme yalnızca bu tarayıcının `localStorage` alanında saklanır. Tarayıcı verilerini silmek ilerlemeyi de siler. Ana ekrandaki `Yedeği indir` tüm veriyi bir `.json` dosyasına kaydeder; `Yedeği yükle` bu dosyayı aynı veya başka bir cihaza geri yükler (o cihazdaki verinin yerine geçer). Uygulama ayrıca tarayıcıdan veriyi otomatik silmemesi için kalıcı depolama izni ister.
+
 ## Proje yapısı
 
 ```text
@@ -44,7 +79,11 @@ src/
       games/               # Eşleştirme, soru-cevap, cümle tamamlama
       import/              # CSV/XML okuma ve yükleme sonucu
       navigation/          # Ana ekran ve oyun ekranı geçişleri
+      shortcuts/           # Klavye kısayolları
       study/               # Kartlar ve serbest Leitner çalışması
+      words/               # Tek kelime düzenleme ve silme
+      backup/              # JSON yedek indirme/yükleme
+      progress/            # Öğrendiklerim seviyeleri ve listesi
     bootstrap.js           # Olay bağlantıları ve ilk ekranın açılması
   styles/
     main.css               # Stil giriş noktası ve yükleme sırası
@@ -53,6 +92,7 @@ src/
     study.css              # Kart çalışma ekranı
     games.css              # Oyun ekranları ve cevap durumları
     import.css             # Yükleme sonucu penceresi
+    tools.css              # Zor kelimeler, düzenleme penceresi, yedekleme, kısayol ipuçları
     responsive.css         # Mobil görünüm ve hareket azaltma tercihleri
 tests/
   helpers/                 # HTML'deki sıraya göre uygulama yükleyicisi

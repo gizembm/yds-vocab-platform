@@ -27,7 +27,7 @@
   min-height: 84px;
   background: var(--card);
   color: var(--ink);
-  border-color: #AAB8AC;
+  border-color: var(--field);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -40,17 +40,17 @@
 .match-card.active {
   background: var(--lavender);
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px #D6CBE4;
+  box-shadow: 0 0 0 2px var(--lavender-line);
 }
 .match-card.done {
   background: var(--sage);
   color: var(--know);
-  border-color: #A4BCA2;
+  border-color: var(--know-line);
 }
 .match-card.bad {
   background: var(--rose);
   color: var(--miss);
-  border-color: #B67D76;
+  border-color: var(--miss-line);
 }
 .match-card.done::after {
   content: '✓ Doğru';
@@ -61,7 +61,7 @@
   font-size: .75rem;
 }
 .quiz-card {
-  background: #F1F4ED;
+  background: var(--soft);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 30px;
@@ -69,6 +69,7 @@
   margin-top: 16px;
 }
 #quizCat {
+  display: block;
   color: var(--mut);
   overflow-wrap: anywhere;
 }
@@ -76,16 +77,22 @@
   text-align: left;
 }
 #quizWord {
-  font-size: 2.1rem;
+  display: inline-block;
+  font-size: 2rem;
   font-weight: 700;
   margin: 12px 0;
+  padding: 0 .12em;
   overflow-wrap: anywhere;
-  letter-spacing: -.025em;
+  letter-spacing: -.02em;
+  background: linear-gradient(transparent 55%, var(--highlight) 55%, var(--highlight) 90%, transparent 90%);
 }
 .sentence-mode .quiz-card {
   text-align: left;
 }
 .sentence-mode #quizWord {
+  display: block;
+  padding: 0;
+  background: none;
   font-size: 1.4rem;
   line-height: 1.85;
   font-weight: 600;
@@ -101,7 +108,7 @@
 .quiz-choices button {
   background: var(--card);
   color: var(--ink);
-  border-color: #AAB8AC;
+  border-color: var(--field);
   min-height: 60px;
   padding: 16px;
   text-align: left;
@@ -113,12 +120,12 @@
 .quiz-choices button.good {
   background: var(--sage);
   color: var(--know);
-  border-color: #A4BCA2;
+  border-color: var(--know-line);
 }
 .quiz-choices button.bad {
   background: var(--rose);
   color: var(--miss);
-  border-color: #B67D76;
+  border-color: var(--miss-line);
 }
 .quiz-choices button.good::after {
   content: ' ✓';

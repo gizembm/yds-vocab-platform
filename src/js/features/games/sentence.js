@@ -100,6 +100,8 @@
       store.data.pts += 5;
       c.sentenceCorrect = (c.sentenceCorrect || 0) + 1;
     }
+    store.adjustDifficulty(c, 'sentenceDifficulty', ok ? -1 : 2);
+    if (!ok && !playState.daily)daily.registerMistake(c.id);
     if (playState.daily) {
       const game = store.data.program.session.sentence, id = game.pending.shift();
       if (ok)game.done.push(id);

@@ -100,20 +100,25 @@ test('daily sentence mistakes repeat after two questions and return to card stud
   sentenceAnswer(g);g.flush();sentenceAnswer(g);g.flush();
   assert.equal(session(g).sentence.pending[0],id);sentenceAnswer(g);g.flush();
   assert.ok(session(g).pending.includes(id));
-  assert.equal(g.run('S.program.cards['+JSON.stringify(id)+'].learned'),false);
+  assert.equal(g.run('S.program.cards['+JSON.stringify(id)+'].stage'),0);
+  assert.equal(g.run('S.program.cards['+JSON.stringify(id)+'].due'),'2026-10-15');
   g.run('restartDailyGame()');assert.equal(session(g).sentence.done.length,0);
   assert.equal(session(g).sentence.pending.length,6);
   sentenceAnswer(g);g.day(1);const before=session(g);g.flush();
   assert.deepEqual(session(g),before);assert.equal(g.run('playDaily'),false);
 });
 
-test('six cumulative 20-word days and seventh-day review follow the starting date',()=>{
-  const g=setup();g.begin();
+test('each day opens 20 new words plus the previous day words; day 7 reviews the week within the cap',()=>{
+  const g=setup();g.begin();const sizes=[];
   for(let day=0;day<7;day++){
-    g.day(day);assert.equal(session(g).ids.length,Math.min(day+1,6)*20);
-    assert.equal(session(g).newIds.length,day===6?0:20);
-    assert.equal(new Set(session(g).ids).size,session(g).ids.length);
+    g.day(day);const s=session(g);sizes.push(s.ids.length);
+    assert.equal(s.newIds.length,day===6?0:20);
+    assert.equal(new Set(s.ids).size,s.ids.length);
+    assert.ok(s.ids.length<=80);
+    g.learn();
   }
+  // day 2: day-1 words; day 4: day-3 words + day-0 words due after 3 days.
+  assert.deepEqual(sizes,[20,40,40,40,60,60,80]);
 });
 test('missed days do not allocate words or shift the cycle',()=>{
   const g=setup();g.begin();g.day(2);
@@ -133,14 +138,16 @@ test('a failed card returns after two other cards, until explicitly learned',()=
   g.run("rateDaily('hard')");assert.deepEqual(session(g).pending,['3','0']);
   g.learn();assert.equal(session(g).pending.length,0);
 });
-test('same-cycle learned cards return next day without advancing review stage',()=>{
+test('a learned word advances its interval at the next-day review, also inside the week',()=>{
   const g=setup(30);g.begin();g.learn();g.day(1);
-  assert.equal(session(g).pending.length,30);g.learn();
-  assert.equal(g.run("S.program.cards['0'].stage"),0);
+  assert.ok(session(g).ids.includes('0'));g.learn();
+  assert.equal(g.run("S.program.cards['0'].stage"),1);
+  assert.equal(g.run("S.program.cards['0'].due"),'2026-10-18');
+  g.day(2);assert.ok(!session(g).ids.includes('0'));
 });
 test('old unknown words carry forward and learned words advance through spaced intervals',()=>{
   const g=setup(2);g.begin();g.run("rateDaily('know')");g.day(7);
-  assert.deepEqual(session(g).pending,['0','1']);g.learn();
+  assert.deepEqual(session(g).pending,['1','0']);g.learn();
   assert.equal(g.run("S.program.cards['0'].stage"),1);
   assert.equal(g.run("S.program.cards['0'].due"),'2026-10-24');
   g.day(8);assert.deepEqual(session(g).ids,['1']);g.learn();
@@ -150,8 +157,32 @@ test('old unknown words carry forward and learned words advance through spaced i
   g.day(31);g.learn();assert.equal(g.run("S.program.cards['0'].stage"),4);
   g.day(61);g.learn();assert.equal(g.run("S.program.cards['0'].stage"),4);
 });
+test('reviews are capped at 60 per day with forgotten and overdue words first',()=>{
+  const g=setup(200);g.begin();
+  for(let day=0;day<5;day++){g.day(day);g.learn();}
+  // 30 overdue + 20 previous-day words + 1 forgotten word fit under the limit, so new words still open.
+  g.run("Object.values(S.program.cards).forEach((c,i)=>{c.learned=true;c.due=i<30?'2026-10-01':'2026-12-01';});S.program.cards['150']={cycle:0,assigned:'2026-10-14',learned:false,stage:0,due:null};");
+  g.day(5);let s=session(g);
+  assert.equal(s.backlog,false);assert.equal(s.newIds.length,20);assert.equal(s.ids.length,71);
+  assert.equal(s.ids[0],'150');
+  // 100 overdue reviews do not fit: no new words, 80 review cards, most urgent first.
+  const h=setup(200);h.begin();
+  for(let day=0;day<5;day++){h.day(day);h.learn();}
+  h.run("Object.values(S.program.cards).forEach(c=>{c.learned=true;c.due='2026-10-01';});S.program.cards['150']={cycle:0,assigned:'2026-10-14',learned:false,stage:0,due:null};");
+  h.day(5);s=session(h);
+  assert.equal(s.newIds.length,0);assert.equal(s.ids.length,80);assert.equal(s.ids[0],'150');
+});
+test('daily games use only new and missed words, so review cards need no games',()=>{
+  const g=setup(60);g.begin();g.learn();g.day(1);
+  g.run("startDailyStudy()");const first=session(g).current;g.run("rateDaily('hard')");g.learn();
+  const s=session(g),pool=g.value('gamePool().map(c=>c.id)');
+  assert.equal(s.ids.length,40);assert.equal(pool.length,21);
+  assert.ok(pool.includes(first));assert.ok(s.newIds.every(id=>pool.includes(id)));
+  g.run("startDailyGame('quiz')");assert.equal(session(g).quiz.pending.length,21);
+  assert.deepEqual(g.value('requiredGames()'),['quiz','match']);
+});
 test('a forgotten scheduled word resets to the one-day interval',()=>{
-  const g=setup(1);g.begin();g.learn();g.day(7);g.run("startDailyStudy();rateDaily('hard')");
+  const g=setup(1);g.begin();g.learn();g.day(7);g.run("startDailyStudy();rateDaily('miss')");
   assert.equal(g.run("S.program.cards['0'].learned"),false);g.learn();
   assert.equal(g.run("S.program.cards['0'].stage"),0);
   assert.equal(g.run("S.program.cards['0'].due"),'2026-10-22');
@@ -203,7 +234,7 @@ test('quiz mistakes persist in card work even after a later correct answer',()=>
   assert.ok(session(g).pending.includes(id));
   assert.notEqual(quizAnswer(g),wrong);assert.notEqual(quizAnswer(g),wrong);
   assert.equal(g.elements.get('quizWord').textContent,wrong);quizAnswer(g);
-  assert.ok(session(g).pending.includes(id));assert.equal(g.run(`S.program.cards['${id}'].learned`),false);
+  assert.ok(session(g).pending.includes(id));assert.equal(g.run(`S.program.cards['${id}'].due`),'2026-10-15');
   const restored=setup(0,g.saved());restored.learn();assert.equal(session(restored).pending.length,0);
 });
 function matchPair(g,wrong=false){
@@ -219,11 +250,12 @@ test('daily matching finishes all words, including final single word, without pu
   assert.equal(session(g).match.pending.length,0);assert.equal(session(g).match.done.length,20);
   assert.equal(g.elements.get('matchBoard').children.length,0);
 });
-test('matching errors return both cards to study and keep them in the game',()=>{
-  const g=setup(3);g.begin();g.learn();g.run("startDailyGame('match')");matchPair(g,true);
-  assert.equal(session(g).pending.length,2);assert.equal(session(g).match.pending.length,3);
+test('a matching error returns only the English word to study and keeps it in the game',()=>{
+  const g=setup(3);g.begin();g.learn();g.run("startDailyGame('match')");const id=matchPair(g,true);
+  assert.deepEqual(session(g).pending,[id]);assert.equal(session(g).match.pending.length,3);
+  assert.equal(session(g).match.pending.at(-1),id);
   for(let i=0;i<3;i++)matchPair(g);
-  assert.equal(session(g).match.pending.length,0);assert.equal(session(g).pending.length,2);
+  assert.equal(session(g).match.pending.length,0);assert.deepEqual(session(g).pending,[id]);
 });
 test('small game pools are safely gated and equivalent meanings remain matchable',()=>{
   const g=setup(2);g.run("S.decks.Test.forEach(c=>c.tr='same')");g.begin();g.learn();
@@ -252,4 +284,73 @@ test('matching progress resumes after reload and restarts cancel pending feedbac
   restored.run('restartDailyGame()');restored.flush();
   assert.equal(session(restored).match.pending.length,7);
   assert.equal(session(restored).match.done.length,0);
+});
+
+test('a review backlog pauses new words and gives the free slots to reviews',()=>{
+  const g=setup(300);g.begin();
+  for(let day=0;day<5;day++){g.day(day);g.learn();}
+  g.run("Object.values(S.program.cards).forEach(c=>{c.learned=true;c.due='2026-10-01';});");
+  g.day(5);const s=session(g);
+  assert.equal(s.backlog,true);assert.equal(s.newIds.length,0);assert.equal(s.ids.length,80);
+  g.learn();g.run("Object.values(S.program.cards).forEach(c=>{if(c.due<='2026-10-20')c.due='2026-10-25';});");
+  g.day(6);g.learn();g.day(7);
+  assert.equal(session(g).backlog,false);assert.equal(session(g).newIds.length,20);
+});
+test('synonym and antonym games are offered but not required to finish the day',()=>{
+  const g=setup(10);g.run("allCards().forEach((c,i)=>{c.synonyms='syn'+i;c.antonyms='ant'+i;})");g.begin();g.learn();
+  assert.deepEqual(g.value('requiredGames()'),['quiz','match']);
+  assert.deepEqual(g.value('optionalGames()'),['synonyms','antonyms']);
+  for(const mode of ['quiz','match'])g.run(`S.program.session.${mode}.pending=[];`);
+  assert.equal(g.run('gamesComplete()'),true);
+  assert.equal(g.run('advanceDailyDay()'),true);
+});
+
+test('hard on a new word counts as learned and shows it once more today',()=>{
+  const g=setup(4);g.begin();g.run("rateDaily('hard')");
+  assert.deepEqual(session(g).pending,['1','2','0','3']);
+  assert.equal(g.run("S.program.cards['0'].learned"),true);
+  assert.equal(g.run("S.program.cards['0'].due"),'2026-10-15');
+  g.run("rateDaily('know');rateDaily('know');rateDaily('hard')");
+  assert.deepEqual(session(g).pending,['3']);assert.ok(session(g).done.includes('0'));
+  assert.ok(g.value('gamePool().map(c=>c.id)').includes('0'));
+});
+test('hard on a review drops one interval step and comes back tomorrow without repeating today',()=>{
+  const g=setup(2);g.begin();g.learn();g.day(1);g.learn();
+  assert.equal(g.run("S.program.cards['0'].stage"),1);
+  g.day(4);g.run("startDailyStudy()");
+  while(session(g).current!=='0')g.run("rateDaily('know')");
+  g.run("rateDaily('hard')");
+  assert.equal(g.run("S.program.cards['0'].stage"),0);
+  assert.equal(g.run("S.program.cards['0'].learned"),true);
+  assert.equal(g.run("S.program.cards['0'].due"),'2026-10-19');
+  assert.ok(!session(g).pending.includes('0'));
+});
+test('a daily game mistake drops one step instead of resetting a well-known word',()=>{
+  const g=setup(6);g.begin();g.learn();
+  g.run("Object.assign(S.program.cards['0'],{stage:3,due:'2026-11-20'});dailyMistake('0');");
+  assert.equal(g.run("S.program.cards['0'].stage"),2);
+  assert.equal(g.run("S.program.cards['0'].learned"),true);
+  assert.equal(g.run("S.program.cards['0'].due"),'2026-10-15');
+  assert.ok(session(g).pending.includes('0'));
+});
+test('free-mode mistakes bring learned program words back tomorrow; correct answers never move them',()=>{
+  const g=setup(4);g.begin();g.learn();
+  g.run("Object.assign(S.program.cards['1'],{stage:2,due:'2026-10-30'});");
+  g.run("showHome();startStudy('Test');");
+  g.run("queue.forEach((c,i)=>{if(c.id==='1')studyIndex=i});$('rate').onclick({target:{dataset:{q:'miss'}}});");
+  assert.equal(g.run("S.program.cards['1'].stage"),1);
+  assert.equal(g.run("S.program.cards['1'].due"),'2026-10-15');
+  g.run("startStudy('Test');showAllCards();queue.forEach((c,i)=>{if(c.id==='2')studyIndex=i});$('rate').onclick({target:{dataset:{q:'know'}}});");
+  assert.equal(g.run("S.program.cards['2'].stage"),0);assert.equal(g.run("S.program.cards['2'].due"),'2026-10-15');
+  g.day(1);assert.ok(session(g).ids.includes('1'));
+});
+test('mastery levels follow the review steps: new, learning, strengthening, learned',()=>{
+  const g=setup(30);
+  assert.deepEqual(g.value('Vocab.progress.counts()'),{new:30,learning:0,strengthening:0,learned:0});
+  g.begin();assert.deepEqual(g.value('Vocab.progress.counts()'),{new:10,learning:20,strengthening:0,learned:0});
+  g.learn();g.day(1);g.learn();
+  assert.equal(g.run("Vocab.progress.level(allCards()[0])"),'strengthening');
+  g.run("Object.assign(S.program.cards['0'],{stage:4,due:'2026-12-01'})");
+  assert.equal(g.run("Vocab.progress.level(allCards()[0])"),'learned');
+  assert.deepEqual(g.value('Vocab.progress.learnedCards().map(c=>c.id)'),['0']);
 });

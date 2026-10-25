@@ -40,7 +40,7 @@
     $('home').hidden = true;
     $('study').hidden = true;
     $('play').hidden = false;
-    $('playInfo').textContent = (name || 'Tüm kategoriler') + ' · ' + store.cardsOf(name).length + ' kart';
+    $('playInfo').textContent = store.scopeLabel(name) + ' · ' + store.cardsOf(name).length + ' kart';
     $('matchBoard').hidden = mode !== 'match';
     $('quizBox').hidden = mode === 'match';
     $('quizBox').className = 'quiz-box' + (mode === 'sentence' ? ' sentence-mode' : '');

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const { store, decks, study, matching, quiz, sentence, daily } = globalThis.Vocab;
+  const { config, store, decks, study, matching, quiz, sentence, daily, backup, progress } = globalThis.Vocab;
   const { $, dstr } = globalThis.Vocab.utils;
 
   function renderStats() {
@@ -10,7 +10,9 @@
     if (store.data.last !== t && store.data.today) {
       store.data.today = 0;
     }
-    $('streak').textContent = store.data.streak;
+    // A missed day breaks the streak; show 0 until the next study session restarts it.
+    const active = store.data.last === t || store.data.last === dstr(Date.now() - config.DAY);
+    $('streak').textContent = active ? store.data.streak : 0;
     $('pts').textContent = store.data.pts;
     $('today').textContent = store.data.today;
   }
@@ -18,6 +20,8 @@
   function renderDecks() {
     decks.renderStats();
     daily.renderDaily();
+    backup.renderBackup();
+    progress.renderMastery();
     const box = $('decks');
     box.innerHTML = '';
     const names = Object.keys(store.data.decks);
@@ -25,56 +29,73 @@
       box.innerHTML = '<p class="hint">Henüz kategori yok. Bir dosya yükle veya kategori ekle.</p>';
       return;
     }
-    const mk = (name, cards, all) => {
+    const mk = (name, cards, scope, deletable) => {
       const due = cards.filter(c => c.due <= Date.now()).length;
       const el = document.createElement('div');
-      el.className = 'deck';
-      el.innerHTML = '<div><b></b><small>' + cards.length + ' kart · ' + due + ' tekrar bekliyor</small></div><div></div>';
+      el.className = 'deck' + (scope === config.HARD_SCOPE ? ' hard-deck' : '');
+      el.innerHTML = '<div><b></b><small></small></div><div></div>';
       el.querySelector('b').textContent = name;
-      const go = document.createElement('button');
-      go.textContent = 'Çalış';
-      go.onclick = () => study.startStudy(all ? null : name);
-      el.lastChild.append(go);
-      const match = document.createElement('button');
-      match.className = 'play';
-      match.textContent = 'Eşleştir';
-      match.onclick = () => matching.startMatch(all ? null : name);
-      el.lastChild.append(match);
-      const quizButton = document.createElement('button');
-      quizButton.className = 'play';
-      quizButton.textContent = 'Soru-Cevap';
-      quizButton.onclick = () => quiz.startQuiz(all ? null : name);
-      el.lastChild.append(quizButton);
+      el.querySelector('small').textContent = scope === config.HARD_SCOPE
+        ? cards.length + ' kelime · en \u00e7ok hata yapt\u0131klar\u0131n'
+        : cards.length + ' kart · ' + due + ' tekrar bekliyor';
+      const actions = el.lastChild;
+      actions.className = 'deck-actions';
+      const add = (label, onclick, className = 'play', disabled = false) => {
+        const button = document.createElement('button');
+        button.className = className;
+        button.textContent = label;
+        button.disabled = disabled;
+        button.onclick = onclick;
+        actions.append(button);
+      };
+      add('Çalış', () => study.startStudy(scope), '');
+      add('Eşleştir', () => matching.startMatch(scope));
+      add('Soru-Cevap', () => quiz.startQuiz(scope));
       for (const [relation, label] of [['synonyms', 'Eş Anlam Bul'], ['antonyms', 'Zıt Anlam Bul']]) {
-        const relationButton = document.createElement('button');
-        relationButton.className = 'play';
-        relationButton.textContent = label;
-        relationButton.disabled = !cards.some(card => String(card[relation] || '').trim());
-        relationButton.onclick = () => quiz.startRelation(all ? null : name, relation);
-        el.lastChild.append(relationButton);
+        add(label, () => quiz.startRelation(scope, relation), 'play', !cards.some(card => String(card[relation] || '').trim()));
       }
-      const sentenceButton = document.createElement('button');
-      sentenceButton.className = 'play';
-      sentenceButton.textContent = 'Cümle Tamamla';
-      sentenceButton.onclick = () => sentence.startSentence(all ? null : name);
-      el.lastChild.append(sentenceButton);
-      if (!all) {
-        const del = document.createElement('button');
-        del.className = 'del';
-        del.textContent = 'Sil';
-        del.onclick = () => {
+      add('Cümle Tamamla', () => sentence.startSentence(scope));
+      if (deletable) {
+        add('Sil', () => {
           if (confirm('"' + name + '" kategorisi silinsin mi?')) {
             delete store.data.decks[name];
             store.save();
             decks.renderDecks();
           }
-        };
-        el.lastChild.append(del);
+        }, 'del');
       }
+      if (scope === config.HARD_SCOPE)el.append(decks.hardWordList(cards));
       box.append(el);
     };
-    if (names.length > 1)mk('Tüm kategoriler', names.flatMap(n => store.data.decks[n]), true);
-    names.forEach(n => mk(n, store.data.decks[n]));
+    const hard = store.hardCards();
+    if (hard.length)mk('Zor kelimelerim', hard, config.HARD_SCOPE, false);
+    if (names.length > 1)mk('Tüm kategoriler', names.flatMap(n => store.data.decks[n]), null, false);
+    names.forEach(n => mk(n, store.data.decks[n], n, true));
+  }
+
+  // Collapsible list so the hard words can be read before practising them.
+  function hardWordList(cards) {
+    const details = document.createElement('details');
+    details.className = 'hard-list';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Kelimeleri gör';
+    const list = document.createElement('ul');
+    cards.forEach(card => {
+      const item = document.createElement('li');
+      const en = document.createElement('b');
+      en.lang = 'en';
+      en.textContent = card.en;
+      const tr = document.createElement('span');
+      tr.textContent = card.tr;
+      const score = document.createElement('span');
+      score.className = 'repeat-count';
+      score.title = 'Hata puan\u0131';
+      score.textContent = String(store.difficulty(card));
+      item.append(en, tr, score);
+      list.append(item);
+    });
+    details.append(summary, list);
+    return details;
   }
 
   function addDeck() {
@@ -89,6 +110,7 @@
   Object.assign(decks, {
     renderStats,
     renderDecks,
+    hardWordList,
     addDeck
   });
 })();

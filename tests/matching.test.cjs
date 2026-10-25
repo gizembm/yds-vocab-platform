@@ -72,12 +72,12 @@ test('same-language selections switch selection without counting a mistake', () 
   assert.ok(g.cards.every(c => !c.matchDifficulty));
 });
 
-test('wrong pairs persist difficulty and correct matches reduce it', () => {
+test('a wrong pair penalizes only the English word and correct matches reduce it', () => {
   const g = game(), a = g.tiles()[0];
   const wrong = g.tiles().find(b => b.dataset.type === 'tr' && b.dataset.id !== a.dataset.id);
   a.onclick(); wrong.onclick();
   assert.equal(g.saved().decks.Test.find(c => c.id === a.dataset.id).matchDifficulty, 2);
-  assert.equal(g.saved().decks.Test.find(c => c.id === wrong.dataset.id).matchDifficulty, 2);
+  assert.equal(g.saved().decks.Test.find(c => c.id === wrong.dataset.id).matchDifficulty, undefined);
   g.flush();
   const right = g.tiles().find(b => b.dataset.type === 'tr' && b.dataset.id === a.dataset.id);
   right.onclick(); a.onclick();

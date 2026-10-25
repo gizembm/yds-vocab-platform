@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const { store, sentence, daily } = globalThis.Vocab;
+  const { store, daily } = globalThis.Vocab;
   const { $ } = globalThis.Vocab.utils;
 
   function renderDailyActions(target) {
@@ -17,18 +17,16 @@
       return;
     }
     const labels = { quiz : 'Test', match : 'E\u015fle\u015ftirme', sentence : 'C\u00fcmle Tamamla', synonyms : 'E\u015f Anlam Bul', antonyms : 'Z\u0131t Anlam Bul' };
-    for (const mode of s.requiredGames || ['quiz', 'match']) {
-      const label = labels[mode];
+    const required = daily.requiredGames(), optional = daily.optionalGames();
+    for (const mode of [...required, ...optional]) {
       const button = document.createElement('button');
-      button.textContent = label + (s[mode].pending?.length === 0 ? ' ✓' : '');
+      const isOptional = optional.includes(mode);
+      button.className = isOptional ? 'optional-game' : '';
+      button.textContent = labels[mode] + (isOptional ? ' (isteğe bağlı)' : '') + (s[mode].pending?.length === 0 ? ' ✓' : '');
       button.onclick = () => daily.startDailyGame(mode);
-      button.disabled = mode === 'sentence' ? !sentence.sentenceCards(daily.dailyCards()).length || new Set(store.allCards().map(c => sentence.englishKey(c.en))).size < 4
-      : mode === 'match' ? s.ids.length < 2 : new Set(daily.dailyCards().map(c => c.tr)).size < 2;
-      if (mode === 'synonyms' || mode === 'antonyms')button.disabled = !daily.dailyCards().some(c => String(c[mode] || '').trim());
       box.append(button);
     }
-    const complete = !s.pending.length && (s.requiredGames || []).every(mode => s[mode]?.pending?.length === 0);
-    if (complete) {
+    if (daily.gamesComplete(s)) {
       const next = document.createElement('button');
       next.textContent = 'Sonraki güne geç';
       next.onclick = () => daily.advanceDailyDay();
@@ -36,7 +34,9 @@
     }
     const note = document.createElement('p');
     note.className = 'hint';
-    note.textContent = 'Test için iki farklı anlam, eşleştirme için iki kelime gerekir. Cümle Tamamla için kelimeyi içeren örnek cümle ve listende dört farklı İngilizce kelime gerekir.';
+    note.textContent = required.length
+      ? 'Oyunlar bugünün yeni kelimeleri ve kartlarda zorlandığın kelimelerle oynanır. Eş ve zıt anlam oyunları isteğe bağlıdır; yapmasan da sonraki güne geçebilirsin.'
+      : 'Bugün oyun gerektiren yeni veya hatalı kelime yok.';
     box.append(note);
   }
 
@@ -45,14 +45,31 @@
     $('programStart').hidden = !!s;
     $('programStart').disabled = !store.allCards().length;
     $('programStudy').hidden = !s;
+    $('programProgress').hidden = !s;
     if (!s) {
       $('programSummary').textContent = '6 gün 20 yeni kelime, 7. gün genel tekrar. Başladığın gün döngünün ilk günüdür.';
       $('programActions').innerHTML = '';
       return;
     }
     const day = (store.data.program.dayIndex || 0)%7 + 1;
-    $('programSummary').textContent = (daily.cycleOf(s.date) + 1) + '. döngü · ' + day + '. gün' + (day === 7 ? ' · Genel tekrar' : '') +
-    ' · ' + s.newIds.length + ' yeni · ' + s.ids.length + ' toplam · ' + s.done.length + ' tamamlanan · ' + s.pending.length + ' kalan';
+    const note = day === 7 ? 'Genel tekrar günü' : s.backlog ? 'Tekrarlar birikti, bugün yeni kelime yok' : '';
+    const chips = [
+      (daily.cycleOf() + 1) + '. hafta, ' + day + '. gün',
+      s.newIds.length + ' yeni',
+      (s.ids.length - s.newIds.length) + ' tekrar',
+      s.pending.length ? s.pending.length + ' kart kaldı' : 'Kartlar bitti'
+    ];
+    const summary = $('programSummary');
+    summary.textContent = '';
+    for (const text of note ? [note, ...chips] : chips) {
+      const chip = document.createElement('span');
+      chip.className = 'chip' + (text === note ? ' chip-note' : '');
+      chip.textContent = text;
+      summary.append(chip);
+    }
+    const total = s.ids.length, percent = total ? Math.round(100 * (total - s.pending.length) / total) : 0;
+    $('programProgress').setAttribute('aria-valuenow', String(percent));
+    $('programProgress').setAttribute('style', '--p:' + percent + '%');
     $('programStudy').textContent = s.pending.length ? 'Günlük çalışmaya devam et' : 'Günlük kartlar tamamlandı';
     daily.renderDailyActions('programActions');
   }

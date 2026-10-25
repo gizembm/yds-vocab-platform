@@ -112,10 +112,11 @@
         playState.match.timer = null;
       }, 450);
     } else {
-      [a, b].forEach(tile => {
-        const wrong = playState.match.cards.find(c => c.id === tile.dataset.id);
-        wrong.matchDifficulty = Math.min(8, (wrong.matchDifficulty || 0) + 2);
-      });
+      // Only the English word counts as the mistake.
+      const enTile = a.dataset.type === 'en' ? a : b;
+      const wrong = playState.match.cards.find(c => c.id === enTile.dataset.id);
+      wrong.matchDifficulty = Math.min(8, (wrong.matchDifficulty || 0) + 2);
+      daily.registerMistake(wrong.id);
       store.save();
       a.classList.add('bad');
       b.classList.add('bad');

@@ -1,0 +1,187 @@
+/* Hard words, word editor, backup panel and keyboard hints. */
+.hard-deck {
+  background: var(--rose-soft);
+  border-color: var(--miss-line);
+}
+.hard-deck small {
+  color: var(--miss);
+}
+.hard-list {
+  margin-top: 14px;
+}
+.hard-list summary {
+  cursor: pointer;
+  color: var(--miss);
+  font-weight: 600;
+  font-size: .9rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.hard-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  max-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--miss-line);
+}
+.hard-list li {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--miss-line);
+  font-size: .9rem;
+}
+.hard-list li>* {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.bar #editCard {
+  margin-left: auto;
+}
+.word-editor form {
+  display: grid;
+  gap: 12px;
+}
+.word-editor h2,
+.word-editor p {
+  margin: 0;
+}
+.word-editor label {
+  display: grid;
+  gap: 4px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--mut);
+}
+.word-editor textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--field);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+.word-editor textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.word-editor #wordError:empty {
+  display: none;
+}
+.word-editor {
+  padding-bottom: 0;
+}
+/* Keep Save visible while the form scrolls on small screens. */
+.editor-actions {
+  position: sticky;
+  bottom: 0;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 12px 0 22px;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+}
+.editor-actions .del {
+  margin-left: 0;
+  margin-right: auto;
+}
+.backup-panel #backupStatus {
+  margin: 4px 0 0;
+}
+#backupStatus.warn {
+  color: var(--hard);
+  font-weight: 600;
+}
+.kbd-hint {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: .8rem;
+}
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--card);
+  font: inherit;
+  font-size: .75rem;
+  text-align: center;
+}
+.daily-actions button.optional-game {
+  border: 1.5px dashed var(--field);
+  background: transparent;
+  color: var(--mut);
+  font-weight: 500;
+}
+#dailyReturn {
+  margin-top: 16px;
+}
+/* Mastery: one bar, four levels coloured from "not started" to "learned". */
+.mastery-bar {
+  display: flex;
+  height: 12px;
+  margin: 14px 0 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--line);
+  gap: 2px;
+}
+.mastery-bar span {
+  flex-basis: 0;
+  min-width: 0;
+}
+.mastery-levels {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 10px;
+  margin: 0;
+}
+.mastery-level {
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+}
+.mastery-level dt {
+  font-size: .8rem;
+  color: var(--mut);
+}
+.mastery-level dd {
+  margin: 2px 0 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mastery-bar .level-new { background: var(--level-new); }
+.mastery-bar .level-learning { background: var(--level-learning); }
+.mastery-bar .level-strengthening { background: var(--level-strengthening); }
+.mastery-bar .level-learned { background: var(--level-learned); }
+.mastery-level { border-top: 4px solid var(--level-new); }
+.mastery-level.level-learning { background: var(--peach); border-top-color: var(--level-learning); }
+.mastery-level.level-strengthening { background: var(--lavender); border-top-color: var(--level-strengthening); }
+.mastery-level.level-learned { background: var(--sage); border-top-color: var(--level-learned); }
+.mastery-level.level-learned dd { color: var(--know); }
+.mastery-list summary { color: var(--know); }
+.mastery-list ul { border-top-color: var(--line); }
+.mastery-list li { border-bottom-color: var(--line); }
+@media (max-width: 600px) {
+  .mastery-levels {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
+/* Touch devices have no keyboard shortcuts. */
+@media (hover: none) {
+  .kbd-hint {
+    display: none;
+  }
+}

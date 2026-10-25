@@ -8,16 +8,11 @@
   const { study: studyState, play: playState } = globalThis.Vocab.session;
 
   function startDailyGame(mode) {
-    if (!['quiz', 'match', 'sentence', 'synonyms', 'antonyms'].includes(mode))return;
+    if (!daily.GAME_MODES.includes(mode))return;
     if (daily.refreshDailyDay())return;
     const s = daily.ensureDaily();
-    if (s.pending.length || !s.ids.length)return;
-    if (mode === 'match' && s.ids.length < 2 || mode === 'quiz' && new Set(daily.dailyCards().map(c => c.tr)).size < 2)return;
-    const relation = ['synonyms', 'antonyms'].includes(mode);
-    const ids = mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id)
-      : relation ? daily.dailyCards().filter(c => String(c[mode] || '').trim()).map(c => c.id) : s.ids;
-    if (relation && !ids.length)return;
-    if (mode === 'sentence' && (!ids.length || new Set(store.allCards().map(c => sentence.englishKey(c.en))).size < 4))return;
+    if (s.pending.length || !daily.gameAvailable(mode))return;
+    const ids = daily.gameIds(mode);
     navigation.showPlay(mode, null);
     playState.daily = true;
     store.data.lastView = { type: 'dailyGame', mode };
@@ -35,12 +30,11 @@
 
   function dailyGameStatus() {
     const s = store.data.program.session, game = s[playState.mode];
-    const total = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).length
-      : ['synonyms', 'antonyms'].includes(playState.mode) ? daily.dailyCards().filter(c => String(c[playState.mode] || '').trim()).length : s.ids.length;
-    if ($('nextDailyDay'))$('nextDailyDay').hidden = !!s.pending.length || !(s.requiredGames || []).every(mode => s[mode]?.pending?.length === 0);
+    const total = game.done.length + game.pending.length;
+    if ($('nextDailyDay'))$('nextDailyDay').hidden = !daily.gamesComplete(s);
     $('playInfo').textContent = 'Günlük çalışma · ' + game.done.length + ' / ' + total + ' tamamlandı';
     $('playHint').textContent = game.pending.length
-    ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : 'Bugün çalıştığın kelimeler. ') + 'Yanlışlar kart çalışmasına da geri döner.'
+    ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : 'Bugünün yeni kelimeleri ve zorlandıkların. ') + 'Yanlışlar kart çalışmasına da geri döner.'
     : 'Tur tamamlandı!' + (s.pending.length ? ' Yanlış yaptığın kelimeleri kartlarda yeniden çalış.' : ' Diğer oyuna ana ekrandan geçebilirsin.');
   }
 
@@ -51,8 +45,7 @@
     clearTimeout(playState.match.timer);
     playState.match.timer = null;
     const s = store.data.program.session;
-    const ids = playState.mode === 'sentence' ? sentence.sentenceCards(daily.dailyCards()).map(c => c.id)
-      : ['synonyms', 'antonyms'].includes(playState.mode) ? daily.dailyCards().filter(c => String(c[playState.mode] || '').trim()).map(c => c.id) : s.ids;
+    const ids = daily.gameIds(playState.mode);
     s[playState.mode] = {
       pending : shuffle([...ids]), done : []
     };
@@ -75,7 +68,7 @@
     $('quizCat').textContent = c ? store.cardCat(c) : '';
     if (!c)return;
     const relation = ['synonyms', 'antonyms'].includes(playState.mode);
-    const terms = card => relation ? String(card[playState.mode] || '').split(/[;,/|]/).map(x => x.trim()).filter(Boolean) : [card.tr];
+    const terms = card => relation ? daily.relationTerms(card, playState.mode) : [card.tr];
     const correct = terms(c), answer = correct[0];
     const wrong = shuffle([...new Set(daily.dailyCards().filter(x => x.id !== c.id).flatMap(terms))].filter(value => !correct.includes(value))).slice(0, 3);
     shuffle([answer, ...wrong]).forEach(opt => {
@@ -103,6 +96,7 @@
     }
     button.classList.add(ok ? 'good' : 'bad');
     $('quizFeedback').textContent = ok ? 'Doğru!' : 'Doğru cevap: ' + answer;
+    $('quizFeedback').className = 'feedback ' + (ok ? 'good' : 'bad');
     [...$('quizChoices').children].forEach(b => {
       if (b.textContent === answer)b.classList.add('good');
     });
@@ -165,13 +159,11 @@
       card.matchDifficulty = Math.max(0, (card.matchDifficulty || 0) - 1);
       store.data.pts += 4;
     } else {
-      new Set(playState.match.pick.map(b => b.dataset.id)).forEach(id => {
-        daily.dailyMistake(id);
-        const c = playState.match.cards.find(c => c.id === id);
-        c.matchDifficulty = Math.min(8, (c.matchDifficulty || 0) + 2);
-      });
-      const ids = playState.match.pick.map(b => b.dataset.id);
-      game.pending = [...game.pending.filter(id => !ids.includes(id)), ...ids];
+      // Only the English word you tried to match counts as a mistake; the Turkish
+      // tile you picked belongs to a word you may well know.
+      daily.dailyMistake(card.id);
+      card.matchDifficulty = Math.min(8, (card.matchDifficulty || 0) + 2);
+      game.pending = [...game.pending.filter(id => id !== card.id), card.id];
     }
     playState.match.pick.forEach(b => b.classList.add(ok ? 'done' : 'bad'));
     store.save();

@@ -6,7 +6,7 @@
 }
 body {
   margin: 0;
-  font-family: system-ui,"Segoe UI",sans-serif;
+  font-family: var(--font);
   background: var(--bg);
   color: var(--ink);
   line-height: 1.6;
@@ -23,10 +23,10 @@ header {
   border-bottom: 1px solid var(--line);
 }
 h1 {
-  font-size: 1.35rem;
-  letter-spacing: -.035em;
+  font-size: 1.3rem;
+  letter-spacing: -.02em;
   margin: 0;
-  font-weight: 750;
+  font-weight: 700;
 }
 h2 {
   font-size: 1.15rem;
@@ -80,25 +80,48 @@ main>section:not([hidden]) {
   min-width: 0;
 }
 .daily-panel {
-  background: var(--sage);
-  border-color: #CFDDCD;
+  background: var(--lavender);
+  border-color: var(--lavender-line);
   padding: 30px;
 }
 .daily-panel h2 {
   font-size: 1.45rem;
 }
-.eyebrow {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--pri);
-  font-size: .75rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-}
 #programSummary {
-  margin: 8px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
   color: var(--ink);
-  font-size: .95rem;
+  font-size: .9rem;
+}
+.chip {
+  background: var(--card);
+  border: 1px solid var(--lavender-line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.chip-note {
+  background: var(--highlight);
+  border-color: transparent;
+  font-weight: 600;
+}
+.progress {
+  height: 10px;
+  margin: 0 0 22px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--lavender-line);
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  width: var(--p, 0%);
+  background: var(--pri);
+  border-radius: inherit;
+  transition: width 300ms ease;
 }
 .daily-actions {
   display: flex;
@@ -111,15 +134,15 @@ main>section:not([hidden]) {
 }
 .daily-actions button {
   background: var(--card);
-  color: var(--accent);
-  border-color: #D8D1E3;
+  color: var(--pri-ink);
+  border-color: var(--lavender-line);
 }
 .daily-actions p {
   flex-basis: 100%;
   margin: 4px 0 0;
 }
 .daily-panel .hint {
-  color: var(--pri);
+  color: var(--pri-ink);
 }
 .section-heading {
   margin: 28px 0 14px;
@@ -143,7 +166,7 @@ input[type=text],input:not([type]) {
   min-width: 0;
   width: 100%;
   padding: 11px 14px;
-  border: 1px solid #AAB8AC;
+  border: 1px solid var(--field);
   border-radius: 12px;
   background: var(--card);
   color: var(--ink);
@@ -165,7 +188,7 @@ input[type=file]::file-selector-button {
   min-height: 44px;
   margin: 4px 12px 4px 0;
   padding: 10px 14px;
-  border: 1px solid #AAB8AC;
+  border: 1px solid var(--field);
   border-radius: 12px;
   background: var(--sage);
   color: var(--pri);
@@ -188,7 +211,7 @@ button {
   transition: background-color 180ms ease,color 180ms ease,border-color 180ms ease,box-shadow 180ms ease;
 }
 button:hover:not(:disabled) {
-  box-shadow: 0 3px 10px rgba(41,59,52,.12);
+  box-shadow: 0 3px 10px rgba(31,42,68,.12);
   border-color: var(--pri);
 }
 button:active:not(:disabled) {
@@ -205,7 +228,7 @@ button:disabled {
 button.ghost {
   background: transparent;
   color: var(--pri);
-  border-color: #AAB8AC;
+  border-color: var(--field);
 }
 button.del {
   background: transparent;
@@ -215,7 +238,7 @@ button.del {
 }
 button.del:hover:not(:disabled) {
   background: var(--rose);
-  border-color: #B67D76;
+  border-color: var(--miss-line);
 }
 .deck {
   display: flex;
@@ -233,20 +256,21 @@ button.del:hover:not(:disabled) {
   font-size: .85rem;
   margin-top: 4px;
 }
-.deck div:last-child {
+.deck div:last-child,.deck-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
 .deck button.play {
-  background: var(--lavender);
-  color: var(--accent);
-  border-color: transparent;
+  background: var(--soft);
+  color: var(--pri-ink);
+  border-color: var(--lavender-line);
+  font-weight: 500;
 }
 .deck button.play:hover:not(:disabled),.daily-actions button:hover:not(:disabled) {
-  background: #E4DCEE;
-  border-color: #9585AA;
+  background: var(--lavender-line);
+  border-color: var(--pri);
 }
 .import-panel {
   margin-top: 28px;

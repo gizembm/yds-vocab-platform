@@ -16,7 +16,12 @@
       return;
     }
     const now = Date.now();
-    studyState.queue = study.studyCards().filter(c => studyState.forceAll || c.due <= now).sort((a, b) => a.box - b.box || a.due - b.due);
+    if (studyState.scope === config.HARD_SCOPE) {
+      // Hard words are practised regardless of their free-study due date, hardest first.
+      studyState.queue = study.studyCards();
+    } else {
+      studyState.queue = study.studyCards().filter(c => studyState.forceAll || c.due <= now).sort((a, b) => a.box - b.box || a.due - b.due);
+    }
     const i = studyState.queue.findIndex(c => c.id === store.data.cur);
     // kaldığın karttan devam
     studyState.index = i >= 0 ? i : 0;
@@ -46,7 +51,7 @@
     const c = studyState.queue[studyState.index];
     $('empty').hidden = studyState.daily || !!c;
     $('game').hidden = !c;
-    $('info').textContent = (studyState.scope || 'Tüm kategoriler') + ' · ' + studyState.queue.length + ' kart sırada';
+    $('info').textContent = store.scopeLabel(studyState.scope) + ' · ' + studyState.queue.length + ' kart sırada';
     if (studyState.daily) {
       $('info').textContent = 'Günlük çalışma · ' + studyState.queue.length + ' kelime kaldı';
       $('all').hidden = true;
@@ -101,6 +106,8 @@
     }
     const c = studyState.queue[studyState.index];
     if (!c)return;
+    store.adjustDifficulty(c, 'cardDifficulty', q === 'know' ? -1 : q === 'hard' ? 1 : 2);
+    if (q !== 'know')daily.registerMistake(c.id);
     if (q === 'know') {
       c.box = Math.min(5, c.box + 1);
       store.data.pts += 10;
