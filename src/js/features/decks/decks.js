@@ -26,7 +26,7 @@
     box.innerHTML = '';
     const names = Object.keys(store.data.decks);
     if (!names.length) {
-      box.innerHTML = '<p class="hint">Henüz kategori yok. Bir dosya yükle veya kategori ekle.</p>';
+      box.innerHTML = '<p class="hint">Henüz kelime yok. Aşağıdan elle kelime ekle veya bir liste dosyası yükle.</p>';
       return;
     }
     const mk = (name, cards, scope, deletable) => {

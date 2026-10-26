@@ -260,3 +260,54 @@ test('several saves in one user action are written to storage once', () => {
   queued.shift()();
   assert.equal(writes, 2, 'a flushed write is not repeated');
 });
+
+test('words can be added by hand, one after another, into existing or new categories', () => {
+  const b = browser({ decks: { Fiiller: [{ id: 'a', en: 'abate', tr: 'azalmak', box: 1, due: 0 }] }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const type = values => Object.entries(values).forEach(([id, value]) => { b.elements.get(id).value = value; });
+  b.elements.get('addWordOpen').onclick();
+  assert.equal(b.elements.get('wordEditor').open, true);
+  assert.equal(b.elements.get('editCatRow').hidden, false);
+  assert.equal(b.elements.get('wordDelete').hidden, true);
+  assert.equal(b.elements.get('editCat').value, 'Fiiller');
+  assert.equal(b.elements.get('deckNames').children.length, 1);
+
+  type({ editEn: '  bolster ', editTr: 'desteklemek', editEx: 'Data bolster the claim.', editSyn: 'support' });
+  b.elements.get('wordSaveNext').onclick();
+  assert.equal(b.elements.get('wordEditor').open, true, 'fast entry keeps the dialog open');
+  assert.equal(b.elements.get('editEn').value, '');
+  assert.equal(b.elements.get('editCat').value, 'Fiiller');
+  assert.match(b.elements.get('wordStatus').textContent, /bolster/);
+  const added = b.saved().decks.Fiiller[1];
+  assert.equal(added.en, 'bolster');
+  assert.equal(added.ex, 'Data bolster the claim.');
+  assert.equal(added.box, 1);
+  assert.equal(typeof added.id, 'string');
+
+  type({ editEn: 'ABATE', editTr: 'dinmek' });
+  assert.equal(b.app.words.saveEdit(true), false);
+  assert.match(b.elements.get('wordError').textContent, /zaten var/);
+  type({ editEn: 'feasible', editTr: '' });
+  assert.equal(b.app.words.saveEdit(true), false);
+  assert.match(b.elements.get('wordError').textContent, /boş bırakılamaz/);
+
+  type({ editCat: 'Sıfatlar', editEn: 'feasible', editTr: 'uygulanabilir' });
+  b.elements.get('wordForm').onsubmit({ preventDefault() {} });
+  assert.equal(b.elements.get('wordEditor').open, false);
+  assert.equal(b.saved().decks['Sıfatlar'][0].en, 'feasible');
+  assert.equal(b.saved().lastAddDeck, 'Sıfatlar');
+
+  b.app.words.openAdder();
+  assert.equal(b.elements.get('editCat').value, 'Sıfatlar', 'remembers the last category');
+  b.app.words.closeEditor();
+});
+
+test('the first word can be added by hand into an empty app', () => {
+  const b = browser();
+  b.elements.get('addWordOpen').onclick();
+  assert.equal(b.elements.get('editCat').value, 'Genel');
+  b.elements.get('editEn').value = 'curb';
+  b.elements.get('editTr').value = 'dizginlemek';
+  b.elements.get('wordForm').onsubmit({ preventDefault() {} });
+  assert.equal(b.saved().decks.Genel[0].en, 'curb');
+  assert.equal(b.elements.get('programStart').disabled, false);
+});

@@ -38,6 +38,8 @@
   $('nextDailyDay').onclick = app.daily.advanceDailyDay;
   $('dailyReturn').onclick = app.navigation.showHome;
   $('editCard').onclick = () => app.words.openEditor();
+  $('addWordOpen').onclick = () => app.words.openAdder();
+  $('wordSaveNext').onclick = () => app.words.saveEdit(true);
   $('wordForm').onsubmit = event => {
     event.preventDefault();
     app.words.saveEdit();

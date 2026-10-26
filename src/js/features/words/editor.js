@@ -1,44 +1,115 @@
-// words: edit or delete a single word from the study card. DOM events are connected in bootstrap.js.
+// words: add a word by hand, or edit/delete one from the study card. DOM events are connected in bootstrap.js.
+// One dialog serves both modes: "add" shows the category field, "edit" shows the delete button.
 (() => {
   'use strict';
 
-  const { store, study, daily, words } = globalThis.Vocab;
+  const { store, study, daily, decks, words } = globalThis.Vocab;
   const { $ } = globalThis.Vocab.utils;
   const { study: studyState } = globalThis.Vocab.session;
 
   const FIELDS = { editEn: 'en', editTr: 'tr', editEx: 'ex', editExTr: 'exTr', editSyn: 'synonyms', editAnt: 'antonyms' };
+  const DEFAULT_DECK = 'Genel';
   let editing = null;
+  let adding = false;
 
   function currentCard() {
     return studyState.queue[studyState.index] || null;
   }
 
+  function fill(card) {
+    for (const [id, field] of Object.entries(FIELDS))$(id).value = card ? card[field] || '' : '';
+    $('wordError').textContent = '';
+    $('wordStatus').textContent = '';
+  }
+
+  function setMode(add) {
+    adding = add;
+    $('wordEditorTitle').textContent = add ? 'Kelime ekle' : 'Kelimeyi düzenle';
+    $('editCatRow').hidden = !add;
+    $('wordEditorCat').hidden = add;
+    $('wordDelete').hidden = add;
+    $('wordSaveNext').hidden = !add;
+    $('wordSave').textContent = add ? 'Kaydet ve kapat' : 'Kaydet';
+  }
+
   function openEditor(card = words.currentCard()) {
     if (!card)return false;
     editing = card;
-    for (const [id, field] of Object.entries(FIELDS))$(id).value = card[field] || '';
-    $('wordError').textContent = '';
+    setMode(false);
+    fill(card);
     $('wordEditorCat').textContent = store.cardCat(card);
     $('wordEditor').showModal();
     return true;
   }
 
-  function closeEditor() {
+  // Suggests existing categories; starts with the last category used for manual entry.
+  function openAdder(deckName) {
     editing = null;
-    if ($('wordEditor').open)$('wordEditor').close();
+    setMode(true);
+    fill(null);
+    const names = Object.keys(store.data.decks), list = $('deckNames');
+    list.innerHTML = '';
+    for (const name of names) {
+      const option = document.createElement('option');
+      option.value = name;
+      list.append(option);
+    }
+    const last = store.data.lastAddDeck;
+    $('editCat').value = deckName || (last && store.data.decks[last] ? last : names[0] || DEFAULT_DECK);
+    $('wordEditor').showModal();
+    return true;
   }
 
-  function saveEdit() {
-    const card = editing;
-    if (!card)return false;
+  function closeEditor() {
+    const changed = adding;
+    editing = null;
+    adding = false;
+    if ($('wordEditor').open)$('wordEditor').close();
+    // Words added in this dialog appear in the category list right away.
+    if (changed)decks.renderDecks();
+  }
+
+  function readValues() {
     const values = {};
     for (const [id, field] of Object.entries(FIELDS))values[field] = $(id).value.trim();
+    $('wordStatus').textContent = '';
     if (!values.en || !values.tr) {
       $('wordError').textContent = 'İngilizce kelime ve Türkçe karşılık boş bırakılamaz.';
+      return null;
+    }
+    return values;
+  }
+
+  function addWord(keepOpen = false) {
+    const values = readValues();
+    if (!values)return false;
+    const deckName = $('editCat').value.trim() || DEFAULT_DECK;
+    if (store.hasWord(deckName, values.en)) {
+      $('wordError').textContent = '"' + values.en + '" bu kategoride zaten var.';
       return false;
     }
-    const deck = store.data.decks[store.cardCat(card)] || [];
-    if (deck.some(other => other !== card && other.en.toLowerCase() === values.en.toLowerCase())) {
+    store.data.decks[deckName] ||= [];
+    store.data.decks[deckName].push(store.createCard(values));
+    store.data.lastAddDeck = deckName;
+    store.save();
+    if (keepOpen) {
+      // Fast entry: keep the category, clear the word fields and start the next word.
+      fill(null);
+      $('wordStatus').textContent = '"' + values.en + '" ' + deckName + ' kategorisine eklendi. Sıradaki kelimeyi yazabilirsin.';
+      $('editEn').focus?.();
+      return true;
+    }
+    closeEditor();
+    return true;
+  }
+
+  function saveEdit(keepOpen = false) {
+    if (adding)return addWord(keepOpen);
+    const card = editing;
+    if (!card)return false;
+    const values = readValues();
+    if (!values)return false;
+    if (store.hasWord(store.cardCat(card), values.en, card)) {
       $('wordError').textContent = '"' + values.en + '" bu kategoride zaten var.';
       return false;
     }
@@ -66,7 +137,9 @@
   Object.assign(words, {
     currentCard,
     openEditor,
+    openAdder,
     closeEditor,
+    addWord,
     saveEdit,
     deleteEdited
   });

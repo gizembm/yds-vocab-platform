@@ -57,6 +57,10 @@ Kartlarda ve oyunlarda yapılan her hata kelimenin hata puanını artırır, do�
 
 `Boşluk` kartı çevirir, `1` Bilemedim, `2` Zorlandım, `3` Öğrendim, `←`/`→` kartlar arasında gezinir. Oyunlarda şıklar `1`–`4` ile seçilir.
 
+## Elle kelime ekleme
+
+Ana ekrandaki `Kelime ekle` bölümünde `✚ Elle kelime ekle` düğmesi bir form açar: kategori (var olan birini seç veya yeni bir ad yaz), İngilizce kelime, Türkçe karşılık ve isteğe bağlı örnek cümle, çeviri, eş/zıt anlamlılar. `Kaydet, yenisini ekle` formu açık tutar ve kategoriyi korur, böylece arka arkaya kelime girilebilir. Aynı kategoride aynı İngilizce kelime ikinci kez eklenmez. Eklenen kelimeler günlük programa ertesi gün yeni kelime olarak girer.
+
 ## Kelime düzenleme
 
 Kart ekranındaki `✎ Düzenle` ile kelimenin İngilizcesini, çevirisini, örnek cümlesini ve eş/zıt anlamlılarını düzeltebilir veya kelimeyi silebilirsin.

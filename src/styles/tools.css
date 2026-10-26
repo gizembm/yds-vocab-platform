@@ -73,10 +73,16 @@
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
-.word-editor #wordError:empty {
+.word-editor #wordError:empty,
+.word-editor #wordStatus:empty {
   display: none;
 }
-.word-editor {
+.import-panel .import-subheading {
+  margin: 24px 0 4px;
+  font-size: .95rem;
+}
+/* Also overrides the mobile dialog padding, so nothing shows below the sticky actions. */
+.word-editor.import-result {
   padding-bottom: 0;
 }
 /* Keep Save visible while the form scrolls on small screens. */

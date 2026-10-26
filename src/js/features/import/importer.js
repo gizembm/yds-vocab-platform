@@ -16,7 +16,7 @@
       }
       const d = cat || 'Genel';
       store.data.decks[d] = store.data.decks[d] || [];
-      if (store.data.decks[d].some(c => c.en.toLowerCase() === en.toLowerCase())) {
+      if (store.hasWord(d, en)) {
         duplicate++;
         const key = JSON.stringify([d, en.toLowerCase()]);
         const entry = repeated.get(key) || {
@@ -26,9 +26,7 @@
         repeated.set(key, entry);
         return;
       }
-      store.data.decks[d].push({
-        id : Date.now() + '-' + Math.random().toString(36).slice(2, 7), en, tr, ex : ex || '', exTr : exTr || '', synonyms : synonyms || '', antonyms : antonyms || '', box : 1, due : 0
-      });
+      store.data.decks[d].push(store.createCard({ en, tr, ex, exTr, synonyms, antonyms }));
       n++;
     });
     store.save();

@@ -36,7 +36,10 @@
     <h2 class="section-heading">Kategorilerin</h2>
     <div id="decks"></div>
     <div class="panel import-panel">
-      <h2>Kelime listesi yükle</h2>
+      <h2>Kelime ekle</h2>
+      <p class="hint">Tek tek yazmak için elle ekle veya hazır bir listeyi dosyadan yükle.</p>
+      <button id="addWordOpen" type="button">✚ Elle kelime ekle</button>
+      <h3 class="import-subheading">Dosyadan yükle</h3>
       <p class="hint">CSV veya XML. Sütun sırası: Kategori, İngilizce Kelime, Türkçe Karşılığı, Örnek Cümle, Cümle Çevirisi, Eş Anlamlı, Zıt Anlamlı.</p>
       <input type="file" id="file" accept=".csv,.xml,.txt" aria-label="Kelime listesi dosyası">
       <div class="row"><input id="newDeck" placeholder="Yeni kategori adı" aria-label="Yeni kategori adı"><button id="addDeck">Kategori ekle</button></div>
@@ -118,6 +121,9 @@
   <form id="wordForm" novalidate>
     <h2 id="wordEditorTitle">Kelimeyi düzenle</h2>
     <p id="wordEditorCat" class="mut"></p>
+    <label id="editCatRow" hidden><span>Kategori <small class="mut">(yeni bir ad yazarsan kategori oluşur)</small></span><input id="editCat" list="deckNames" autocomplete="off"></label>
+    <datalist id="deckNames"></datalist>
+    <p id="wordStatus" class="feedback good" role="status" aria-live="polite"></p>
     <label>İngilizce kelime<input id="editEn" lang="en" autocomplete="off"></label>
     <label>Türkçe karşılığı<input id="editTr" autocomplete="off"></label>
     <label>Örnek cümle<textarea id="editEx" rows="2" lang="en"></textarea></label>
@@ -128,6 +134,7 @@
     <div class="game-actions editor-actions">
       <button type="button" id="wordDelete" class="del">Kelimeyi sil</button>
       <button type="button" id="wordCancel" class="ghost">Vazgeç</button>
+      <button type="button" id="wordSaveNext" class="ghost" hidden>Kaydet, yenisini ekle</button>
       <button type="submit" id="wordSave">Kaydet</button>
     </div>
   </form>

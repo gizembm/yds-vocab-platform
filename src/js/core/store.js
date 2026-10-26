@@ -41,6 +41,13 @@
     card[field] = Math.max(0, Math.min(8, (card[field] || 0) + change));
   };
 
+  // Shared by file import and manual entry so both create the same card shape.
+  store.createCard = ({ en, tr, ex = '', exTr = '', synonyms = '', antonyms = '' }) => ({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    en, tr, ex, exTr, synonyms, antonyms, box: 1, due: 0
+  });
+  store.hasWord = (deckName, en, except = null) => (store.data.decks[deckName] || [])
+    .some(card => card !== except && card.en.toLowerCase() === en.toLowerCase());
   store.cardsOf = name => name === HARD_SCOPE ? store.hardCards()
     : name ? store.data.decks[name] || [] : store.allCards();
   store.scopeLabel = name => name === HARD_SCOPE ? 'Zor kelimelerim' : name || 'Tüm kategoriler';
