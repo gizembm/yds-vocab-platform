@@ -89,6 +89,14 @@ test('starting a challenge moves the deck out of today\'s main session and keeps
   assert.equal(g.value('program().session').newIds.length,0,'learned words are not new again');
 });
 
+test('words opened in the main program but not learned yet are new in the challenge',()=>{
+  const g=setup(30);g.begin();
+  g.run("S.decks.YDS=S.decks.Test.splice(0,15);startChallenge('YDS');");
+  const s=g.value('program().session');
+  assert.equal(s.newIds.length,10);
+  assert.equal(s.ids.length,10);
+});
+
 test('leaving a challenge returns progress to the main program',()=>{
   const g=setup(20);g.run("S.decks.YDS=S.decks.Test.splice(0,10);startChallenge('YDS');");g.learn();
   g.run("leaveChallenge('YDS')");

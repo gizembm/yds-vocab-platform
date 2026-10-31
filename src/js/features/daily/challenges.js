@@ -7,14 +7,15 @@
 
   const challengeOf = deck => store.data.challenges?.[deck] || null;
 
-  // Words keep their progress: their states move out of the main program.
+  // Learned words keep their progress: their states move out of the main program.
+  // Words that are not learned yet start over as new words of the challenge.
   function startChallenge(deck) {
     const cards = store.data.decks[deck] || [];
     if (!cards.length || challengeOf(deck))return false;
     const main = store.data.program, cardStates = {};
     for (const card of cards) {
       if (!main?.cards[card.id])continue;
-      cardStates[card.id] = main.cards[card.id];
+      if (main.cards[card.id].learned)cardStates[card.id] = main.cards[card.id];
       delete main.cards[card.id];
     }
     store.data.challenges ||= {};
