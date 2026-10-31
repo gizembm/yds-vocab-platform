@@ -40,6 +40,13 @@
   store.adjustDifficulty = (card, field, change) => {
     card[field] = Math.max(0, Math.min(8, (card[field] || 0) + change));
   };
+  // A correct answer lowers the total score, taken from the largest field, so a word that
+  // became hard through games can also leave the hard list from the flashcards.
+  store.easeDifficulty = card => {
+    const fields = ['cardDifficulty', 'quizDifficulty', 'matchDifficulty', 'sentenceDifficulty'];
+    const field = fields.reduce((a, b) => (card[b] || 0) > (card[a] || 0) ? b : a);
+    if (card[field] > 0)card[field]--;
+  };
 
   // Shared by file import and manual entry so both create the same card shape.
   store.createCard = ({ en, tr, ex = '', exTr = '', synonyms = '', antonyms = '' }) => ({

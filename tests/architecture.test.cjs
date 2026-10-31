@@ -179,7 +179,7 @@ test('hard words form a virtual category that can be studied with keyboard short
   assert.equal(key(b, ' '), true);
   assert.equal(b.elements.get('rate').hidden, false);
   assert.equal(key(b, '3'), true);
-  assert.equal(b.saved().decks.Test[0].cardDifficulty, 0);
+  assert.equal(b.saved().decks.Test[0].quizDifficulty, 3, '"know" lowers the score even when it came from a game');
   assert.equal(b.saved().pts, 10);
   assert.equal(key(b, ' ', 'INPUT'), false, 'typing is never intercepted');
 });

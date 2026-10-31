@@ -53,6 +53,12 @@ Ana ekrandaki panel kelimeleri dört seviyede gösterir: `Yeni` (programa girmed
 
 Kartlarda ve oyunlarda yapılan her hata kelimenin hata puanını artırır, doğru cevaplar azaltır. Puanı en yüksek 40 kelime ana ekranda `Zor kelimelerim` adlı sanal kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
 
+Hata puanı dört kaynağın toplamıdır: kartlar, quiz, eşleştirme ve cümle oyunu. Her kaynak 0–8 arasında tutulur.
+
+- Yanlış cevap ve `Bilemedim` +2, `Zorlandım` +1 ekler.
+- Doğru cevap 1 düşürür. Kartlarda `Öğrendim`, puanı en yüksek olan kaynaktan düşürür; böylece oyunlarda zorlanılan bir kelime kartlarla da listeden çıkarılabilir.
+- Toplam puanı 2 ve üzeri olan kelime listeye girer, 2'nin altına inince listeden çıkar.
+
 ## Kısayollar (masaüstü)
 
 `Boşluk` kartı çevirir, `1` Bilemedim, `2` Zorlandım, `3` Öğrendim, `←`/`→` kartlar arasında gezinir. Oyunlarda şıklar `1`–`4` ile seçilir.

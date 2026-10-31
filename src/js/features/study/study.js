@@ -106,7 +106,8 @@
     }
     const c = studyState.queue[studyState.index];
     if (!c)return;
-    store.adjustDifficulty(c, 'cardDifficulty', q === 'know' ? -1 : q === 'hard' ? 1 : 2);
+    if (q === 'know')store.easeDifficulty(c);
+    else store.adjustDifficulty(c, 'cardDifficulty', q === 'hard' ? 1 : 2);
     if (q !== 'know')daily.registerMistake(c.id);
     if (q === 'know') {
       c.box = Math.min(5, c.box + 1);

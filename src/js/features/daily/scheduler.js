@@ -251,7 +251,8 @@
     if (!state || !s.pending.includes(id))return;
     s.pending = s.pending.filter(x => x !== id);
     const card = store.allCards().find(c => c.id === id);
-    if (card)store.adjustDifficulty(card, 'cardDifficulty', q === 'know' ? -1 : q === 'hard' ? 1 : 2);
+    if (card && q === 'know')store.easeDifficulty(card);
+    else if (card)store.adjustDifficulty(card, 'cardDifficulty', q === 'hard' ? 1 : 2);
     s.hardAgain ||= [];
     if (q === 'know') {
       if (!state.learned) {
