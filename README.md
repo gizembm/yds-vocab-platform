@@ -1,8 +1,8 @@
-# YDS Vocabulary Platform
+# YDS Kelime Platformu
 
-CSV veya XML ile kelime listesi yukleyip calisma kartlari, eslestirme ve soru-cevap oyunlariyla pratik yapmaya yarayan basit bir web uygulamasi.
+YDS ve benzeri sınavlara hazırlananlar için aralıklı tekrara dayalı bir kelime çalışma uygulaması. Kendi kelime listeni yüklersin; uygulama her gün hangi kelimeleri çalışacağını belirler, kartlar ve oyunlarla pekiştirir, zorlandığın kelimeleri ayrıca takip eder.
 
-## Ekran görüntüleri
+Kurulum, sunucu veya hesap gerekmez: `index.html` dosyasını tarayıcıda açman yeterli. Bütün veriler kendi tarayıcında kalır.
 
 ![Ana ekran: günlük program, Öğrendiklerim paneli ve kategoriler](docs/screenshots/home.png)
 
@@ -12,91 +12,182 @@ CSV veya XML ile kelime listesi yukleyip calisma kartlari, eslestirme ve soru-ce
 | **Eşleştirme** | **Cümle Tamamla** |
 | ![İngilizce–Türkçe eşleştirme oyunu](docs/screenshots/match.png) | ![Boşluk doldurmalı Cümle Tamamla oyunu](docs/screenshots/sentence.png) |
 
-Görüntüler örnek kelimelerle `npm run screenshots` komutuyla yeniden alınır (önce bir kez `npm install`; bilgisayardaki Chrome kullanılır, başka bir tarayıcı için `CHROME_PATH` verilebilir).
+## İçindekiler
 
-## Ozellikler
+- [Özellikler](#özellikler)
+- [Başlarken](#başlarken)
+- [Kelime listesi biçimi](#kelime-listesi-biçimi)
+- [Nasıl çalışır](#nasıl-çalışır)
+- [Klavye kısayolları](#klavye-kısayolları)
+- [Veriler ve yedekleme](#veriler-ve-yedekleme)
+- [Geliştirme](#geliştirme)
 
-- Kategori bazli kelime listesi
-- CSV, XML ve TXT dosya aktarimi
-- Leitner mantigiyla tekrar kartlari
-- Telaffuz destegi
-- Eslestirme oyunu
-- Coktan secmeli soru-cevap oyunu
-- Dört İngilizce seçenekli Cümle Tamamla oyunu (tüm kategorilerde ve günlük programda)
-- Tarayicida localStorage ile veri saklama
+## Özellikler
 
-## Kullanim
+**Çalışma**
+- Günlük 20 kelimelik program: 1, 3, 7, 14 ve 30 gün aralıklı tekrar, her hafta bir genel tekrar günü
+- Kategori meydan okuması: her kategori için günde 10 kelimelik ayrı program (örneğin `2025 YDS`, `2024 YDS`)
+- Serbest çalışma: herhangi bir kategoriyi istediğin zaman Leitner kutularıyla çalışma
+- `Zor kelimelerim`: en çok hata yapılan 40 kelimeden otomatik oluşan kategori
+- `Öğrendiklerim` paneli: her kelimenin Yeni, Öğreniliyor, Pekişiyor veya Öğrenildi seviyesi
 
-`index.html` dosyasini tarayicida acman yeterli.
+**Oyunlar**
+- Soru-Cevap: İngilizce kelimenin dört şıktan Türkçe karşılığını bulma
+- Eşleştirme: İngilizce ve Türkçe kelimeleri eşleştirme
+- Cümle Tamamla: örnek cümledeki boşluğu dört İngilizce seçenekten doldurma
+- Eş Anlam Bul ve Zıt Anlam Bul
 
-Dosya yuklerken sutun sirasi:
+**Kelime yönetimi**
+- CSV, TXT ve XML dosyasından toplu yükleme; tekrar eden ve hatalı satırlar için yükleme raporu
+- Tek tek kelime ekleme, kart ekranından düzenleme ve silme
+- İngilizce kelime ve örnek cümleler için sesli okuma
+- JSON yedek indirme ve başka bir cihaza geri yükleme
 
-```text
-Kategori, Ingilizce Kelime, Turkce Karsiligi, Ornek Cumle, Cumle Cevirisi, Es Anlamli, Zit Anlamli
+## Başlarken
+
+1. Depoyu indir veya klonla:
+   ```bash
+   git clone https://github.com/gizembm/yds-vocab-platform.git
+   ```
+2. `index.html` dosyasını tarayıcıda aç.
+3. Ana ekrandaki `Kelime ekle` bölümünden bir kelime listesi yükle veya kelimeleri elle ekle.
+4. `Günlük 20 kelime programı` panelinden programı başlat ya da bir kategori satırındaki `Meydan okuma` butonuna bas.
+
+> CSV dosyalarının okunması için uygulama PapaParse kütüphanesini CDN üzerinden yükler; dosya yüklerken internet bağlantısı gerekir.
+
+## Kelime listesi biçimi
+
+Her satır bir kelimedir. Sütun sırası:
+
+| Sütun | Zorunlu | Örnek |
+| --- | --- | --- |
+| Kategori | Evet | `2025 YDS` |
+| İngilizce kelime | Evet | `mitigate` |
+| Türkçe karşılığı | Evet | `hafifletmek` |
+| Örnek cümle | Hayır | `Trees can mitigate the effects of heat.` |
+| Cümle çevirisi | Hayır | `Ağaçlar sıcağın etkilerini hafifletebilir.` |
+| Eş anlamlılar | Hayır | `alleviate, ease` |
+| Zıt anlamlılar | Hayır | `aggravate` |
+
+**CSV / TXT** (UTF-8, virgülle ayrılmış; virgül içeren alanları tırnak içine al):
+
+```csv
+Kategori,İngilizce,Türkçe,Örnek cümle,Çeviri,Eş anlamlı,Zıt anlamlı
+2025 YDS,mitigate,hafifletmek,Trees can mitigate the effects of heat.,Ağaçlar sıcağın etkilerini hafifletebilir.,"alleviate, ease",aggravate
 ```
 
-## Günlük 20 kelime programı
+İlk hücresinde "Kategori" yazan başlık satırı otomatik atlanır. Excel'den kaydederken `CSV UTF-8` biçimini seç.
 
-Gün, İstanbul saatine göre belirlenir. 1–6. günlerde her gün 20 yeni kelime açılır; 7. gün yeni kelime eklenmez ve o haftanın kelimeleri tekrar edilir.
+**XML**: Kök öğenin her alt öğesi bir kelimedir; onun alt öğeleri yukarıdaki sırayı izler (öğe adları önemli değildir).
+
+```xml
+<words>
+  <word>
+    <category>2025 YDS</category>
+    <en>mitigate</en>
+    <tr>hafifletmek</tr>
+    <example>Trees can mitigate the effects of heat.</example>
+    <exampleTr>Ağaçlar sıcağın etkilerini hafifletebilir.</exampleTr>
+    <synonyms>alleviate, ease</synonyms>
+    <antonyms>aggravate</antonyms>
+  </word>
+</words>
+```
+
+Aynı kategoride aynı İngilizce kelime ikinci kez eklenmez.
+
+## Nasıl çalışır
+
+### Günlük program
+
+Gün İstanbul saatine göre belirlenir. Her hafta 1–6. günlerde 20 yeni kelime açılır; 7. gün yeni kelime gelmez ve haftanın kelimeleri tekrar edilir. Öğrenilen kelime 1, 3, 7, 14 ve 30 gün sonra tekrar gelir.
 
 Bir günün kartları şu sırayla gelir:
 
-1. Unutulan (Bilemedim/Zorlandım denmiş) kelimeler
+1. Unutulan kelimeler (`Bilemedim` veya `Zorlandım` denmiş)
 2. Bir önceki çalışma gününün yeni kelimeleri
 3. Tekrar zamanı gelmiş kelimeler (en çok geciken önce)
 4. 7. günde haftanın kalan kelimeleri
-5. Bugünün 20 yeni kelimesi
+5. Bugünün yeni kelimeleri
 
-Tekrar kartları günde en çok 60 tanedir; fazlası sonraki güne kalır. Zamanı gelen tekrarlar bu sınıra sığmıyorsa o gün yeni kelime açılmaz ve boşalan yer tekrarlara verilir (günde en çok 80 kart). 7. günde de en çok 80 kart gelir. Öğrenilen kelime 1, 3, 7, 14 ve 30 gün aralıklarla geri gelir. Puanlamalar:
+| Sınır | Değer |
+| --- | --- |
+| Günlük yeni kelime | 20 |
+| Günlük tekrar kartı | en çok 60 (fazlası sonraki güne kalır) |
+| Günlük toplam kart | en çok 80 |
 
-- `Öğrendim`: Yeni kelime 1 günlük aralıkla başlar; zamanı gelmiş bir tekrar bir sonraki basamağa geçer. Zamanı gelmemiş kelimede (örneğin 7. gün tekrarında) takvim değişmez.
-- `Zorlandım`: Yeni kelime öğrenilmiş sayılır ve bugün bir kez daha gösterilir; tekrar kelimesi bir basamak düşer ve yarın gelir.
-- `Bilemedim`: Kelime sıfırlanır ve bugün tekrar sorulur.
+Zamanı gelen tekrarlar 60'ı aşarsa o gün yeni kelime açılmaz ve boşalan yer tekrarlara verilir.
 
-Günlük oyunlarda yanlış yapılan kelime bir basamak düşer, yarın tekrar gelir ve bugün kartla yeniden çalışılır. Eşleştirmede yalnızca seçilen İngilizce kelime hatalı sayılır. Serbest çalışma ve serbest oyunlardaki hatalar, programda öğrenilmiş bir kelimeyi bir basamak düşürüp yarınki tekrara ekler; serbest moddaki doğru cevaplar takvimi değiştirmez.
+**Kart puanlaması**
 
-Kartlar bitince günün oyunları açılır. Oyunlar yalnızca bugünün yeni kelimeleri ve kartlarda zorlandığın kelimelerle oynanır; eski tekrarlar sadece kartla geçilir. Oyunlardaki yanlışlar kelimeyi kart çalışmasına geri ekler. Eş Anlam Bul ve Zıt Anlam Bul isteğe bağlıdır. Kartlar ve zorunlu oyunlar (Test, Eşleştirme, Cümle Tamamla) bitmeden yeni güne geçilmez; hepsi bitince `Sonraki güne geç` ile hemen geçebilirsin. Serbest kategori çalışması ve oyunlar günlük programın tekrar takvimini değiştirmez.
+| Buton | Yeni kelime | Tekrar kelimesi |
+| --- | --- | --- |
+| `Öğrendim` | Öğrenilir, 1 gün sonra gelir | Zamanı geldiyse bir sonraki basamağa geçer; zamanı gelmediyse takvim değişmez |
+| `Zorlandım` | Öğrenilir, bugün bir kez daha gösterilir | Bir basamak düşer, yarın gelir |
+| `Bilemedim` | Sıfırlanır, bugün tekrar sorulur | Sıfırlanır, bugün tekrar sorulur |
 
-## Öğrendiklerim
+**Günün oyunları**: Kartlar bitince Test, Eşleştirme ve Cümle Tamamla açılır; Eş Anlam Bul ve Zıt Anlam Bul isteğe bağlıdır. Oyunlar yalnızca bugünün yeni kelimeleri ve kartlarda zorlanılan kelimelerle oynanır; eski tekrarlar yalnızca kartla geçilir. Oyunda yanlış yapılan kelime bir basamak düşer, yarın tekrar gelir ve bugün kart çalışmasına geri eklenir (eşleştirmede yalnızca seçilen İngilizce kelime hatalı sayılır). Kartlar ve zorunlu oyunlar bitince `Sonraki güne geç` ile hemen yeni güne geçilebilir.
 
-Ana ekrandaki panel kelimeleri dört seviyede gösterir: `Yeni` (programa girmedi), `Öğreniliyor` (ilk tekrarını bekliyor), `Pekişiyor` (3, 7 ve 14 günlük basamaklarda) ve `Öğrenildi` (14 günlük tekrarı da bildin, artık 30 günde bir gelir). Öğrenilen kelimeler bir sonraki tekrar tarihleriyle listelenir.
+**Serbest çalışma** günlük programı yalnızca hatalarda etkiler: öğrenilmiş bir kelimede yapılan hata onu bir basamak düşürüp yarınki tekrara ekler; doğru cevaplar takvimi değiştirmez.
 
-## Kategori meydan okuması
+### Kategori meydan okuması
 
-Her kategori satırındaki `Meydan okuma` butonu o kategori için ayrı bir günlük program başlatır (örneğin `2025 YDS`). Kurallar 20 kelimelik programla aynıdır, yalnızca sayılar yarıya iner: 1–6. günlerde günde 10 yeni kelime, 7. gün genel tekrar; günde en çok 30 tekrar kartı ve toplam 40 kart. Kartlardan sonra aynı günlük oyunlar oynanır.
+Her kategori satırındaki `Meydan okuma` butonu, o kategori için ayrı bir günlük program başlatır. Kurallar günlük programla aynıdır, sayılar yarıya iner: günde 10 yeni kelime, en çok 30 tekrar ve toplam 40 kart. Birden fazla kategorinin meydan okuması aynı anda sürebilir.
 
-- Meydan okuması süren kategorinin kelimeleri ana programdan çıkar; her kelimenin tek bir tekrar takvimi olur. Ana programda öğrenilmiş kelimeler basamak ve tekrar tarihleriyle taşınır; henüz öğrenilmemiş kelimeler meydan okumada yeni kelime olarak gelir.
-- Kategori satırında hafta/gün, yeni ve tekrar sayısı görünür; `Devam et` meydan okumayı açar. Birden fazla kategorinin meydan okuması aynı anda sürebilir.
-- Yeni kelimeler bitince meydan okuma tekrarlarla sürer; bütün kelimeler `Öğrenildi` seviyesine gelince satırda `Tamamlandı` yazar.
+- Meydan okuması süren kategorinin kelimeleri ana programdan çıkar; her kelimenin tek bir tekrar takvimi olur. Öğrenilmiş kelimeler basamak ve tekrar tarihleriyle taşınır, henüz öğrenilmemiş kelimeler meydan okumada yeni kelime olarak gelir.
+- Kategori satırında hafta/gün ile yeni ve tekrar sayıları görünür; `Devam et` meydan okumayı açar.
+- Yeni kelimeler bitince meydan okuma tekrarlarla sürer. Bütün kelimeler `Öğrenildi` seviyesine gelince satırda `Tamamlandı` yazar.
 - `Meydan okumayı bırak` kelimeleri ilerlemeleriyle ana programa geri verir. Kategoriye sonradan eklenen kelimeler meydan okumada yeni kelime olarak sıraya girer; kategori silinirse meydan okuması da silinir.
 
-## Zor kelimelerim
+### Öğrendiklerim
 
-Kartlarda ve oyunlarda yapılan her hata kelimenin hata puanını artırır, doğru cevaplar azaltır. Puanı en yüksek 40 kelime ana ekranda `Zor kelimelerim` adlı sanal kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
+| Seviye | Anlamı |
+| --- | --- |
+| Yeni | Henüz programa girmedi |
+| Öğreniliyor | İlk tekrarını bekliyor |
+| Pekişiyor | 3, 7 veya 14 günlük basamakta |
+| Öğrenildi | 14 günlük tekrarı da geçti, artık 30 günde bir gelir |
 
-Hata puanı dört kaynağın toplamıdır: kartlar, quiz, eşleştirme ve cümle oyunu. Her kaynak 0–8 arasında tutulur.
+Öğrenilen kelimeler bir sonraki tekrar tarihleriyle listelenir.
 
-- Yanlış cevap ve `Bilemedim` +2, `Zorlandım` +1 ekler.
-- Doğru cevap 1 düşürür. Kartlarda `Öğrendim`, puanı en yüksek olan kaynaktan düşürür; böylece oyunlarda zorlanılan bir kelime kartlarla da listeden çıkarılabilir.
-- Toplam puanı 2 ve üzeri olan kelime listeye girer, 2'nin altına inince listeden çıkar.
+### Zor kelimelerim
 
-## Kısayollar (masaüstü)
+Her kelimenin bir hata puanı vardır. Puanı 2 ve üzeri olan en fazla 40 kelime, ana ekranda `Zor kelimelerim` adlı kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
 
-`Boşluk` kartı çevirir, `1` Bilemedim, `2` Zorlandım, `3` Öğrendim, `←`/`→` kartlar arasında gezinir. Oyunlarda şıklar `1`–`4` ile seçilir.
+- Hata puanı dört kaynağın toplamıdır: kartlar, Soru-Cevap, Eşleştirme ve Cümle Tamamla. Her kaynak 0–8 arasında tutulur.
+- Yanlış cevap ve `Bilemedim` +2, `Zorlandım` +1 ekler; doğru cevap 1 düşürür.
+- Kartlarda `Öğrendim`, puanı en yüksek kaynaktan düşürür. Böylece oyunlarda zorlanılan bir kelime kartlarla da listeden çıkarılabilir.
 
-## Elle kelime ekleme
+## Klavye kısayolları
 
-Ana ekrandaki `Kelime ekle` bölümünde `✚ Elle kelime ekle` düğmesi bir form açar: kategori (var olan birini seç veya yeni bir ad yaz), İngilizce kelime, Türkçe karşılık ve isteğe bağlı örnek cümle, çeviri, eş/zıt anlamlılar. `Kaydet, yenisini ekle` formu açık tutar ve kategoriyi korur, böylece arka arkaya kelime girilebilir. Aynı kategoride aynı İngilizce kelime ikinci kez eklenmez. Eklenen kelimeler günlük programa ertesi gün yeni kelime olarak girer.
-
-## Kelime düzenleme
-
-Kart ekranındaki `✎ Düzenle` ile kelimenin İngilizcesini, çevirisini, örnek cümlesini ve eş/zıt anlamlılarını düzeltebilir veya kelimeyi silebilirsin.
+| Tuş | İşlev |
+| --- | --- |
+| `Boşluk` | Kartı çevir |
+| `1` / `2` / `3` | Bilemedim / Zorlandım / Öğrendim |
+| `←` / `→` | Önceki / sonraki kart |
+| `1`–`4` | Oyunlarda şık seç |
 
 ## Veriler ve yedekleme
 
-Kelimeler ve bütün ilerleme yalnızca bu tarayıcının `localStorage` alanında saklanır. Tarayıcı verilerini silmek ilerlemeyi de siler. Ana ekrandaki `Yedeği indir` tüm veriyi bir `.json` dosyasına kaydeder; `Yedeği yükle` bu dosyayı aynı veya başka bir cihaza geri yükler (o cihazdaki verinin yerine geçer). Uygulama ayrıca tarayıcıdan veriyi otomatik silmemesi için kalıcı depolama izni ister.
+Kelimeler ve bütün ilerleme yalnızca tarayıcının `localStorage` alanında saklanır; hiçbir sunucuya gönderilmez. Tarayıcı verilerini silmek ilerlemeyi de siler.
 
-## Proje yapısı
+- `Yedeği indir` tüm veriyi bir `.json` dosyasına kaydeder.
+- `Yedeği yükle` bu dosyayı aynı veya başka bir cihaza geri yükler; o cihazdaki verinin yerine geçer.
+- Uygulama, tarayıcının veriyi kendiliğinden silmemesi için kalıcı depolama izni ister.
+
+## Geliştirme
+
+Uygulama derleme adımı olmayan düz JavaScript'tir (klasik `<script>` dosyaları, `file://` üzerinden çalışır). Testler ve ekran görüntüsü betiği için Node.js 18 veya üstü gerekir.
+
+```bash
+npm test                # Bütün testleri çalıştırır (bağımlılık gerekmez)
+npm install             # Yalnızca ekran görüntüsü betiği için
+npm run screenshots     # docs/screenshots altındaki görüntüleri örnek kelimelerle yeniden alır
+```
+
+Ekran görüntüsü betiği bilgisayardaki Chrome'u (yoksa Edge'i) kullanır; başka bir tarayıcı için `CHROME_PATH` ortam değişkenini ver.
+
+### Proje yapısı
 
 ```text
 index.html                 # Ekran iskeleti ve sıralı script yüklemesi
@@ -105,37 +196,24 @@ src/
     core/                  # Ayarlar, yardımcılar, kalıcı veri, geçici oturum
     features/
       audio/               # İngilizce seslendirme
-      daily/               # Günlük planlama, görünüm, oyunlar, gün değişimi
+      backup/              # JSON yedek indirme/yükleme
+      daily/               # Günlük program, kategori meydan okuması, günün oyunları
       decks/               # Kategori listesi, istatistikler, kategori ekleme
-      games/               # Eşleştirme, soru-cevap, cümle tamamlama
-      import/              # CSV/XML okuma ve yükleme sonucu
+      games/               # Eşleştirme, Soru-Cevap, Cümle Tamamla
+      import/              # CSV/XML okuma ve yükleme raporu
       navigation/          # Ana ekran ve oyun ekranı geçişleri
+      progress/            # Öğrendiklerim seviyeleri ve listesi
       shortcuts/           # Klavye kısayolları
       study/               # Kartlar ve serbest Leitner çalışması
-      words/               # Tek kelime düzenleme ve silme
-      backup/              # JSON yedek indirme/yükleme
-      progress/            # Öğrendiklerim seviyeleri ve listesi
+      words/               # Elle ekleme, düzenleme ve silme
     bootstrap.js           # Olay bağlantıları ve ilk ekranın açılması
-  styles/
-    main.css               # Stil giriş noktası ve yükleme sırası
-    tokens.css             # Tema renkleri ve ortak tasarım değişkenleri
-    base.css               # Sayfa düzeni ve ortak bileşenler
-    study.css              # Kart çalışma ekranı
-    games.css              # Oyun ekranları ve cevap durumları
-    import.css             # Yükleme sonucu penceresi
-    tools.css              # Zor kelimeler, düzenleme penceresi, yedekleme, kısayol ipuçları
-    responsive.css         # Mobil görünüm ve hareket azaltma tercihleri
-tests/
-  helpers/                 # HTML'deki sıraya göre uygulama yükleyicisi
-  architecture.test.cjs    # Başlangıç, dosya yolları ve modül bağlantıları
-  daily.test.cjs           # Günlük program ve cümle tamamlama davranışları
-  matching.test.cjs        # Eşleştirme, test ve içe aktarma davranışları
+  styles/                  # Tema, düzen, ekran ve mobil stilleri
+scripts/
+  screenshots.cjs          # README ekran görüntüleri
+tests/                     # node:test ile davranış testleri
 docs/
   architecture.md          # Modül sözleşmeleri ve geliştirme rehberi
+  screenshots/             # README görselleri
 ```
 
-Uygulama için derleme, sunucu veya `npm install` gerekmez. `index.html` doğrudan
-tarayıcıda açılabilir. Mevcut `flashcards_v1` kayıt anahtarı ve veri biçimi korunur.
-CSV ayrıştırma için kullanılan PapaParse CDN bağlantısı önceki gibi devam eder.
-
-Yeni geliştirmelere başlamadan önce [mimari rehberini](docs/architecture.md) oku.
+Kayıt anahtarı (`flashcards_v1`) ve veri biçimi geriye dönük uyumludur; eski kayıtlar ve yedekler dönüştürme gerektirmeden açılır. Yeni bir geliştirmeye başlamadan önce [mimari rehberini](docs/architecture.md) oku.
