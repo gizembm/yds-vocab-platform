@@ -12,6 +12,8 @@ CSV veya XML ile kelime listesi yukleyip calisma kartlari, eslestirme ve soru-ce
 | **Eşleştirme** | **Cümle Tamamla** |
 | ![İngilizce–Türkçe eşleştirme oyunu](docs/screenshots/match.png) | ![Boşluk doldurmalı Cümle Tamamla oyunu](docs/screenshots/sentence.png) |
 
+Görüntüler örnek kelimelerle `npm run screenshots` komutuyla yeniden alınır (önce bir kez `npm install`; bilgisayardaki Chrome kullanılır, başka bir tarayıcı için `CHROME_PATH` verilebilir).
+
 ## Ozellikler
 
 - Kategori bazli kelime listesi

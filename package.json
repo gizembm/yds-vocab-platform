@@ -4,9 +4,13 @@
   "private": true,
   "description": "CSV/XML kelime kartları ve günlük kelime oyunları",
   "scripts": {
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "screenshots": "node scripts/screenshots.cjs"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
   }
 }
