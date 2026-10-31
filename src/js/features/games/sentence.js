@@ -52,7 +52,7 @@
   function showSentence() {
     if (playState.daily)daily.dailyGameStatus();
     const cards = playState.daily ? daily.dailyCards() : store.cardsOf(playState.scope);
-    const game = playState.daily ? store.data.program.session.sentence : null;
+    const game = playState.daily ? daily.program().session.sentence : null;
     const c = game ? cards.find(c => c.id === game.pending[0]) : playState.quiz.list[0]?.card;
     const choices = $('quizChoices');
     choices.innerHTML = '';
@@ -103,7 +103,7 @@
     store.adjustDifficulty(c, 'sentenceDifficulty', ok ? -1 : 2);
     if (!ok && !playState.daily)daily.registerMistake(c.id);
     if (playState.daily) {
-      const game = store.data.program.session.sentence, id = game.pending.shift();
+      const game = daily.program().session.sentence, id = game.pending.shift();
       if (ok)game.done.push(id);
       else {
         game.pending.splice(Math.min(2, game.pending.length), 0, id);

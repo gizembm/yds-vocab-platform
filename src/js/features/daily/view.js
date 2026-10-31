@@ -6,7 +6,7 @@
   const { $ } = globalThis.Vocab.utils;
 
   function renderDailyActions(target) {
-    const box = $(target), s = store.data.program.session;
+    const box = $(target), s = daily.program().session;
     box.innerHTML = '';
     if (!s.ids.length) {
       box.textContent = 'Açılan kelime yok. Yeni kelime yükleyebilir veya sonraki çalışma gününü bekleyebilirsin.';
@@ -41,7 +41,9 @@
   }
 
   function renderDaily() {
-    const s = daily.ensureDaily();
+    // The home panel shows the main program; it is hidden (and redrawn on return) while a challenge is open.
+    if (globalThis.Vocab.session.daily.deck)return;
+    const p = store.data.program, s = daily.ensureDaily();
     $('programStart').hidden = !!s;
     $('programStart').disabled = !store.allCards().length;
     $('programStudy').hidden = !s;
@@ -51,10 +53,10 @@
       $('programActions').innerHTML = '';
       return;
     }
-    const day = (store.data.program.dayIndex || 0)%7 + 1;
+    const day = (p.dayIndex || 0)%7 + 1;
     const note = day === 7 ? 'Genel tekrar günü' : s.backlog ? 'Tekrarlar birikti, bugün yeni kelime yok' : '';
     const chips = [
-      (daily.cycleOf() + 1) + '. hafta, ' + day + '. gün',
+      (daily.cycleOf(p) + 1) + '. hafta, ' + day + '. gün',
       s.newIds.length + ' yeni',
       (s.ids.length - s.newIds.length) + ' tekrar',
       s.pending.length ? s.pending.length + ' kart kaldı' : 'Kartlar bitti'

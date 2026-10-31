@@ -11,4 +11,6 @@
     match: { pick: [], cards: [], timer: null, seen: new Map() },
     quiz: { list: [], step: 0, timer: null, locked: false }
   };
+  // Category whose challenge is open; null means the main daily program.
+  session.daily = { deck: null };
 })();

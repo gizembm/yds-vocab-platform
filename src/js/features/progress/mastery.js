@@ -18,8 +18,11 @@
   const shortDate = date => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', timeZone: 'UTC' })
     .format(Date.parse(date + 'T00:00:00Z'));
 
+  // A word's state lives in the main program or in its category's challenge.
+  const stateOf = card => daily.programs().map(p => p.cards[card.id]).find(Boolean);
+
   function level(card) {
-    const state = store.data.program?.cards?.[card.id];
+    const state = stateOf(card);
     if (!state)return 'new';
     if (!state.learned || !state.stage)return 'learning';
     return state.stage >= LEARNED_STAGE ? 'learned' : 'strengthening';
@@ -32,16 +35,15 @@
   }
 
   function learnedCards() {
-    const cards = store.data.program?.cards || {};
     return store.allCards().filter(card => level(card) === 'learned')
-      .sort((a, b) => String(cards[a.id].due).localeCompare(String(cards[b.id].due)));
+      .sort((a, b) => String(stateOf(a).due).localeCompare(String(stateOf(b).due)));
   }
 
   function renderMastery() {
     const panel = $('masteryPanel');
     if (!panel)return;
     const total = store.allCards().length;
-    panel.hidden = !total || !store.data.program;
+    panel.hidden = !total || !daily.programs().length;
     if (panel.hidden)return;
     const c = counts();
     const bar = $('masteryBar'), levels = $('masteryLevels');
@@ -76,7 +78,7 @@
       tr.textContent = card.tr;
       const due = document.createElement('span');
       due.className = 'repeat-count';
-      due.textContent = 'Tekrar: ' + shortDate(store.data.program.cards[card.id].due);
+      due.textContent = 'Tekrar: ' + shortDate(stateOf(card).due);
       item.append(en, tr, due);
       list.append(item);
     }

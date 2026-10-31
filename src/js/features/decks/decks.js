@@ -35,9 +35,11 @@
       el.className = 'deck' + (scope === config.HARD_SCOPE ? ' hard-deck' : '');
       el.innerHTML = '<div><b></b><small></small></div><div></div>';
       el.querySelector('b').textContent = name;
+      const challenge = deletable ? daily.challengeSummary(name) : null;
       el.querySelector('small').textContent = scope === config.HARD_SCOPE
         ? cards.length + ' kelime · en \u00e7ok hata yapt\u0131klar\u0131n'
-        : cards.length + ' kart · ' + due + ' tekrar bekliyor';
+        : challenge ? cards.length + ' kart · Meydan okuma: ' + challenge + (daily.isComplete(name) ? ' · Tamamland\u0131' : '')
+          : cards.length + ' kart · ' + due + ' tekrar bekliyor';
       const actions = el.lastChild;
       actions.className = 'deck-actions';
       const add = (label, onclick, className = 'play', disabled = false) => {
@@ -48,6 +50,7 @@
         button.onclick = onclick;
         actions.append(button);
       };
+      if (challenge)add('Devam et', () => daily.openChallenge(name), 'challenge');
       add('Çalış', () => study.startStudy(scope), '');
       add('Eşleştir', () => matching.startMatch(scope));
       add('Soru-Cevap', () => quiz.startQuiz(scope));
@@ -55,13 +58,18 @@
         add(label, () => quiz.startRelation(scope, relation), 'play', !cards.some(card => String(card[relation] || '').trim()));
       }
       add('Cümle Tamamla', () => sentence.startSentence(scope));
-      if (deletable) {
-        add('Sil', () => {
-          if (confirm('"' + name + '" kategorisi silinsin mi?')) {
-            delete store.data.decks[name];
-            store.save();
+      if (deletable && !challenge)add('Meydan okuma', () => daily.startChallenge(name), 'challenge', !cards.length);
+      if (challenge) {
+        add('Meydan okumayı bırak', () => {
+          if (confirm('"' + name + '" meydan okuması bırakılsın mı? Kelimeler ilerlemeleriyle ana programa döner.')) {
+            daily.leaveChallenge(name);
             decks.renderDecks();
           }
+        }, 'del');
+      }
+      if (deletable) {
+        add('Sil', () => {
+          if (confirm('"' + name + '" kategorisi silinsin mi?'))decks.removeDeck(name);
         }, 'del');
       }
       if (scope === config.HARD_SCOPE)el.append(decks.hardWordList(cards));
@@ -98,6 +106,14 @@
     return details;
   }
 
+  // A deleted category takes its challenge with it.
+  function removeDeck(name) {
+    delete store.data.decks[name];
+    daily.removeChallenge(name);
+    store.save();
+    decks.renderDecks();
+  }
+
   function addDeck() {
     const n = $('newDeck').value.trim();
     if (!n)return;
@@ -111,6 +127,7 @@
     renderStats,
     renderDecks,
     hardWordList,
+    removeDeck,
     addDeck
   });
 })();

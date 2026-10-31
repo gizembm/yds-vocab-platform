@@ -5,14 +5,18 @@
   const { config, store, decks, study, sentence, daily } = globalThis.Vocab;
   const { $ } = globalThis.Vocab.utils;
 
-  const { study: studyState, play: playState } = globalThis.Vocab.session;
+  const session = globalThis.Vocab.session;
+  const { study: studyState, play: playState } = session;
 
   // A learned word returns after 1, 3, 7, 14 and 30 days.
   const REVIEW_DAYS = [1, 3, 7, 14, 30];
   const NEW_PER_DAY = 20;
   // Review cards beyond this limit move to the next day (most urgent first).
   const MAX_REVIEWS = 60;
-  const MAX_DAY_CARDS = NEW_PER_DAY + MAX_REVIEWS;
+  // A category challenge opens half as many words: 10 new, 30 reviews, 40 cards a day.
+  const limits = p => p && p.deck
+    ? { newPerDay: 10, maxReviews: 30, maxDayCards: 40 }
+    : { newPerDay: NEW_PER_DAY, maxReviews: MAX_REVIEWS, maxDayCards: NEW_PER_DAY + MAX_REVIEWS };
   const GAME_MODES = ['quiz', 'match', 'sentence', 'synonyms', 'antonyms'];
   // Offered in the daily program but never required to move to the next day.
   const OPTIONAL_GAMES = ['synonyms', 'antonyms'];
@@ -23,17 +27,31 @@
   }).format(time);
   const dateNumber = date => Date.parse(date + 'T00:00:00Z') / config.DAY;
   const plusDays = (date, days) => new Date((daily.dateNumber(date) + days) * config.DAY).toISOString().slice(0, 10);
-  const cycleOf = () => Math.floor((store.data.program.dayIndex || 0) / 7);
-  const isReviewDay = () => (store.data.program.dayIndex || 0) % 7 === 6;
+  // The main program lives in store.data.program; each category challenge in
+  // store.data.challenges[deck] with the same shape plus `deck`.
+  const program = () => {
+    const deck = session.daily.deck;
+    return deck ? store.data.challenges?.[deck] || null : store.data.program || null;
+  };
+  const programs = () => [store.data.program, ...Object.values(store.data.challenges || {})].filter(Boolean);
+  // Words of a challenge deck belong only to that challenge.
+  const programCards = p => {
+    if (p.deck)return store.data.decks[p.deck] || [];
+    const own = Object.keys(store.data.challenges || {});
+    return Object.keys(store.data.decks).filter(name => !own.includes(name)).flatMap(name => store.data.decks[name]);
+  };
+  const programLabel = () => session.daily.deck ? session.daily.deck + ' meydan okuması' : 'Günlük çalışma';
+  const cycleOf = (p = daily.program()) => Math.floor((p.dayIndex || 0) / 7);
+  const isReviewDay = (p = daily.program()) => (p.dayIndex || 0) % 7 === 6;
   const dailyCards = () => {
-    const ids = new Set(store.data.program.session.ids);
-    return store.allCards().filter(c => ids.has(c.id));
+    const p = daily.program(), ids = new Set(p.session.ids);
+    return daily.programCards(p).filter(c => ids.has(c.id));
   };
 
   // Games use today's new words plus the words that were hard or missed today.
   // Older reviews are cleared with cards only, so long review days stay short.
   function gamePool() {
-    const s = store.data.program.session, keep = new Set([...s.newIds, ...(s.missed || [])]);
+    const s = daily.program().session, keep = new Set([...s.newIds, ...(s.missed || [])]);
     return daily.dailyCards().filter(c => keep.has(c.id));
   }
 
@@ -64,7 +82,7 @@
     return OPTIONAL_GAMES.filter(mode => daily.gameAvailable(mode, pool));
   }
 
-  function gamesComplete(s = store.data.program.session) {
+  function gamesComplete(s = daily.program().session) {
     return !s.pending.length && daily.requiredGames().every(mode => s[mode]?.pending?.length === 0);
   }
 
@@ -72,13 +90,13 @@
   // overdue reviews (oldest first) and, on the 7th day, the rest of the week's words.
   // Returns every candidate; the caller applies the daily limit.
   function reviewCandidates(p, date) {
-    const cycle = daily.cycleOf(), reviewDay = daily.isReviewDay();
+    const cycle = daily.cycleOf(p), reviewDay = daily.isReviewDay(p);
     const previous = Number.isInteger(p.lastSessionDay) ? p.lastSessionDay : null;
     const rank = st => !st.learned ? 0
       : st.assignedDay === previous ? 1
       : st.due && st.due <= date ? 2
       : reviewDay && st.cycle === cycle ? 3 : null;
-    return store.allCards()
+    return daily.programCards(p)
       .filter(c => p.cards[c.id] && rank(p.cards[c.id]) !== null)
       .sort((a, b) => {
         const x = p.cards[a.id], y = p.cards[b.id];
@@ -88,19 +106,19 @@
   }
 
   function oldestCards(p) {
-    return [...store.allCards()]
+    return [...daily.programCards(p)]
       .sort((a, b) => {
         const aState = p.cards[a.id], bState = p.cards[b.id];
         return String(aState?.due || aState?.assigned || '').localeCompare(String(bState?.due || bState?.assigned || ''));
       })
-      .slice(0, NEW_PER_DAY)
+      .slice(0, daily.limits(p).newPerDay)
       .map(c => c.id);
   }
 
-  function ensureDaily() {
-    const p = store.data.program;
+  function ensureDaily(p = daily.program()) {
     if (!p)return null;
-    const date = daily.programDate(), live = new Set(store.allCards().map(c => c.id));
+    const pool = daily.programCards(p), { newPerDay, maxReviews, maxDayCards } = daily.limits(p);
+    const date = daily.programDate(), live = new Set(pool.map(c => c.id));
     Object.keys(p.cards).forEach(id => {
       if (!live.has(id))delete p.cards[id];
     });
@@ -112,13 +130,13 @@
       p.session = null;
     }
     if (!p.session) {
-      const cycle = daily.cycleOf(), reviewDay = daily.isReviewDay();
+      const cycle = daily.cycleOf(p), reviewDay = daily.isReviewDay(p);
       const candidates = reviewCandidates(p, date);
       // Reviews that no longer fit in today's limit pause new words; the freed
       // slots go to the backlog so it shrinks instead of growing.
-      const backlog = !reviewDay && candidates.length > MAX_REVIEWS;
-      const reviews = candidates.slice(0, reviewDay || backlog ? MAX_DAY_CARDS : MAX_REVIEWS);
-      const fresh = reviewDay || backlog ? [] : store.allCards().filter(c => !p.cards[c.id]).slice(0, NEW_PER_DAY);
+      const backlog = !reviewDay && candidates.length > maxReviews;
+      const reviews = candidates.slice(0, reviewDay || backlog ? maxDayCards : maxReviews);
+      const fresh = reviewDay || backlog ? [] : pool.filter(c => !p.cards[c.id]).slice(0, newPerDay);
       fresh.forEach(c => {
         p.cards[c.id] = {
           cycle, assigned : date, assignedDay : p.dayIndex, learned : false, stage : 0, due : null
@@ -128,14 +146,14 @@
       let ids = [...reviews, ...freshIds];
       // Keep a useful review day when the pool is exhausted and every learned
       // word is scheduled for a later date.
-      if (!ids.length && store.allCards().length)ids = oldestCards(p);
+      if (!ids.length && pool.length)ids = oldestCards(p);
       p.lastSessionDay = p.dayIndex;
       p.session = {
         date, ids, newIds : freshIds, backlog, missed : [], pending : [...ids], done : [], current : ids[0] || null
       };
     }
     const s = p.session;
-    if (!s.ids.length && store.allCards().length) {
+    if (!s.ids.length && pool.length) {
       s.ids = oldestCards(p);
       s.pending = [...s.ids];
       s.done = [];
@@ -151,7 +169,7 @@
       if (game.pending)game.pending = game.pending.filter(id => live.has(id));
       game.done = game.done.filter(id => live.has(id));
     }
-    const sentenceIds = new Set(sentence.sentenceCards(daily.dailyCards()).map(c => c.id));
+    const sentenceIds = new Set(sentence.sentenceCards(pool.filter(c => s.ids.includes(c.id))).map(c => c.id));
     if (s.sentence.pending)s.sentence.pending = s.sentence.pending.filter(id => sentenceIds.has(id));
     s.sentence.done = s.sentence.done.filter(id => sentenceIds.has(id));
     store.save();
@@ -160,6 +178,7 @@
 
   function beginDaily() {
     if (!store.allCards().length)return;
+    session.daily.deck = null;
     if (!store.data.program)store.data.program = {
       version : 1, start : daily.programDate(), cards : {
       }, session : null
@@ -170,12 +189,12 @@
   }
 
   function dailyQueue() {
-    const s = daily.ensureDaily(), byId = new Map(store.allCards().map(c => [c.id, c]));
+    const s = daily.ensureDaily(), byId = new Map(daily.programCards(daily.program()).map(c => [c.id, c]));
     return s.pending.map(id => byId.get(id)).filter(Boolean);
   }
 
   function startDailyStudy() {
-    if (!store.data.program)return;
+    if (!daily.program())return;
     daily.ensureDaily();
     clearTimeout(playState.quiz.timer);
     playState.quiz.timer = null;
@@ -184,7 +203,7 @@
     studyState.daily = true;
     playState.daily = false;
     studyState.scope = null;
-    store.data.lastView = { type: 'dailyStudy' };
+    store.data.lastView = { type: 'dailyStudy', ...session.daily.deck ? { program: session.daily.deck } : {} };
     store.save();
     $('home').hidden = true;
     $('play').hidden = true;
@@ -193,7 +212,7 @@
   }
 
   function advanceDailyDay() {
-    const p = store.data.program, current = daily.ensureDaily();
+    const p = daily.program(), current = daily.ensureDaily();
     if (!p || !daily.gamesComplete(current))return false;
     p.dayIndex = (p.dayIndex || 0) + 1;
     p.session = null;
@@ -247,7 +266,7 @@
   function rateDaily(q) {
     if (!['know', 'hard', 'miss'].includes(q))return;
     if (daily.refreshDailyDay())return;
-    const s = daily.ensureDaily(), id = s.current, state = store.data.program.cards[id];
+    const s = daily.ensureDaily(), id = s.current, state = daily.program().cards[id];
     if (!state || !s.pending.includes(id))return;
     s.pending = s.pending.filter(x => x !== id);
     const card = store.allCards().find(c => c.id === id);
@@ -297,7 +316,7 @@
 
   // A mistake in a daily game: one step down, back to today's card study.
   function dailyMistake(id) {
-    const s = store.data.program.session, state = store.data.program.cards[id];
+    const p = daily.program(), s = p.session, state = p.cards[id];
     if (state)demote(state, s.date);
     markMissed(s, id);
     s.done = s.done.filter(x => x !== id);
@@ -309,7 +328,7 @@
   // are affected; they drop one step and come back in tomorrow's daily review.
   // Correct answers outside the program never move the schedule (early reviews).
   function registerMistake(id) {
-    const state = store.data.program?.cards?.[id];
+    const state = daily.programs().map(p => p.cards[id]).find(Boolean);
     if (state)demote(state, daily.programDate());
   }
 
@@ -341,6 +360,11 @@
     plusDays,
     cycleOf,
     isReviewDay,
-    dailyCards
+    dailyCards,
+    program,
+    programs,
+    programCards,
+    limits,
+    programLabel
   });
 })();

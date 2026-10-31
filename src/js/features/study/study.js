@@ -12,7 +12,7 @@
   function buildQueue() {
     if (studyState.daily) {
       studyState.queue = daily.dailyQueue();
-      studyState.index = Math.max(0, studyState.queue.findIndex(c => c.id === store.data.program.session.current));
+      studyState.index = Math.max(0, studyState.queue.findIndex(c => c.id === daily.program().session.current));
       return;
     }
     const now = Date.now();
@@ -53,7 +53,7 @@
     $('game').hidden = !c;
     $('info').textContent = store.scopeLabel(studyState.scope) + ' · ' + studyState.queue.length + ' kart sırada';
     if (studyState.daily) {
-      $('info').textContent = 'Günlük çalışma · ' + studyState.queue.length + ' kelime kaldı';
+      $('info').textContent = daily.programLabel() + ' · ' + studyState.queue.length + ' kelime kaldı';
       $('all').hidden = true;
       $('dailyStudyDone').hidden = !!c;
       if (!c)daily.renderDailyActions('dailyStudyActions');
@@ -66,7 +66,7 @@
       store.save();
       return;
     }
-    if (studyState.daily)store.data.program.session.current = c.id;
+    if (studyState.daily)daily.program().session.current = c.id;
     else store.data.cur = c.id;
     store.save();
     studyState.flipped = false;
@@ -90,7 +90,7 @@
   function moveCard(step) {
     const next = studyState.index + step;
     if (next < 0 || next >= studyState.queue.length)return;
-    if (studyState.daily)store.data.program.session.current = studyState.queue[next].id;
+    if (studyState.daily)daily.program().session.current = studyState.queue[next].id;
     else store.data.cur = studyState.queue[next].id;
     store.save();
     study.showCard();

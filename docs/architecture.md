@@ -65,9 +65,12 @@ Günlük program dört dosyaya ayrılır:
 - `view.js`: günlük program özeti ve oyun düğmeleri.
 - `games.js`: test, eşleştirme, cümle, eş ve zıt anlam turları; ilerleme ve yeniden başlatma.
 - `lifecycle.js`: tarih değişimini algılama; olay ve aralık bağlantıları
-  `bootstrap.js` içinde yapılır.
+  `bootstrap.js` içinde yapılır. Gün değişince bütün programlar yeni güne geçer.
+- `challenges.js`: kategori meydan okumasını başlatma (kelime durumlarını ana programdan taşır), açma, bırakma (geri taşır), silme, tamamlanma ve satır özeti.
 
-Kelimenin öğrenme durumu tek yerde tutulur: `store.data.program.cards[id]` (`learned`, `stage`, `due`). Serbest Leitner kutuları (`box`/`due` kart üzerinde) yalnızca serbest çalışmanın sırasını belirler. Durumu değiştiren kurallar `scheduler.js` içindedir: `rateDaily` (kart puanlaması), `dailyMistake` (günlük oyun hatası: bir basamak düşür + karta geri gönder), `registerMistake` (serbest mod hatası: yalnızca öğrenilmiş kelimeyi bir basamak düşürüp yarına al) ve `demote`. Serbest moddaki doğru cevaplar takvimi değiştirmez.
+Birden fazla program vardır: ana program `store.data.program`, kategori meydan okumaları `store.data.challenges[kategori]` (aynı yapı + `deck`). Etkin program `Vocab.session.daily.deck` ile seçilir ve `daily.program()` ile alınır; günlük kod `store.data.program`'a doğrudan değil bu fonksiyona bakar. Bir programın kelime havuzu `daily.programCards(p)` (ana program, meydan okuması olan kategorileri içermez), günlük sınırları `daily.limits(p)` ile belirlenir. Ana ekrandaki günlük panel yalnızca ana programı gösterir.
+
+Kelimenin öğrenme durumu tek yerde tutulur: kelimenin ait olduğu programın `cards[id]` alanı (`learned`, `stage`, `due`). Serbest Leitner kutuları (`box`/`due` kart üzerinde) yalnızca serbest çalışmanın sırasını belirler. Durumu değiştiren kurallar `scheduler.js` içindedir: `rateDaily` (kart puanlaması), `dailyMistake` (günlük oyun hatası: bir basamak düşür + karta geri gönder), `registerMistake` (serbest mod hatası: yalnızca öğrenilmiş kelimeyi bir basamak düşürüp yarına al) ve `demote`. Serbest moddaki doğru cevaplar takvimi değiştirmez.
 Oyun ekranından çıkarken bekleyen zamanlayıcıları temizleme davranışı korunmalıdır.
 
 ## Bir özelliği değiştirme veya ekleme

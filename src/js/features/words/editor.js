@@ -127,7 +127,7 @@
     if (deck)deck.splice(deck.indexOf(card), 1);
     if (store.data.cur === card.id)store.data.cur = null;
     // Removes the word from the daily session, game queues and schedule.
-    if (store.data.program)daily.ensureDaily();
+    daily.programs().forEach(p => daily.ensureDaily(p));
     store.save();
     closeEditor();
     study.showCard();

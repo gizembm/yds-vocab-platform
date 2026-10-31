@@ -55,6 +55,7 @@
 
   app.decks.renderDecks();
   const lastView = app.store.data.lastView;
+  if (lastView?.program && app.store.data.challenges?.[lastView.program]) app.session.daily.deck = lastView.program;
   if (lastView?.type === 'study') {
     app.study.startStudy(lastView.scope);
   } else if (lastView?.type === 'play') {

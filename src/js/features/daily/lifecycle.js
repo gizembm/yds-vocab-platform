@@ -11,8 +11,8 @@
     const date = daily.programDate();
     if (date === visibleProgramDate)return false;
     visibleProgramDate = date;
-    if (!store.data.program)return false;
-    daily.ensureDaily();
+    if (!daily.programs().length)return false;
+    daily.programs().forEach(p => daily.ensureDaily(p));
     if (studyState.daily || playState.daily) {
       studyState.daily = false;
       playState.daily = false;

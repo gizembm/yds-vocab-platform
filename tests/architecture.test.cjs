@@ -311,3 +311,20 @@ test('the first word can be added by hand into an empty app', () => {
   assert.equal(b.saved().decks.Genel[0].en, 'curb');
   assert.equal(b.elements.get('programStart').disabled, false);
 });
+
+test('each category row offers a challenge and shows its progress once started', () => {
+  const b = browser({ decks: { Test: [
+    { id: 'a', en: 'abate', tr: 'azalmak', box: 1, due: 0 },
+    { id: 'b', en: 'bolster', tr: 'desteklemek', box: 1, due: 0 }
+  ], Empty: [] }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const row = name => b.elements.get('decks').children.find(el => el.querySelector('b').textContent === name);
+  const button = (name, label) => row(name).children[1].children.find(x => x.textContent === label);
+  assert.equal(button('Empty', 'Meydan okuma').disabled, true);
+  button('Test', 'Meydan okuma').onclick();
+  assert.equal(b.app.session.daily.deck, 'Test');
+  b.app.navigation.showHome();
+  assert.ok(button('Test', 'Devam et'));
+  assert.ok(button('Test', 'Meydan okumayı bırak'));
+  assert.equal(button('Test', 'Meydan okuma'), undefined);
+  assert.match(row('Test').querySelector('small').textContent, /Meydan okuma: 1\. hafta, 1\. gün · 2 yeni · 0 tekrar/);
+});

@@ -15,7 +15,8 @@
     const ids = daily.gameIds(mode);
     navigation.showPlay(mode, null);
     playState.daily = true;
-    store.data.lastView = { type: 'dailyGame', mode };
+    const deck = globalThis.Vocab.session.daily.deck;
+    store.data.lastView = { type: 'dailyGame', mode, ...deck ? { program: deck } : {} };
     store.save();
     studyState.daily = false;
     const game = s[mode];
@@ -29,10 +30,10 @@
   }
 
   function dailyGameStatus() {
-    const s = store.data.program.session, game = s[playState.mode];
+    const s = daily.program().session, game = s[playState.mode];
     const total = game.done.length + game.pending.length;
     if ($('nextDailyDay'))$('nextDailyDay').hidden = !daily.gamesComplete(s);
-    $('playInfo').textContent = 'Günlük çalışma · ' + game.done.length + ' / ' + total + ' tamamlandı';
+    $('playInfo').textContent = daily.programLabel() + ' · ' + game.done.length + ' / ' + total + ' tamamlandı';
     $('playHint').textContent = game.pending.length
     ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : 'Bugünün yeni kelimeleri ve zorlandıkların. ') + 'Yanlışlar kart çalışmasına da geri döner.'
     : 'Tur tamamlandı!' + (s.pending.length ? ' Yanlış yaptığın kelimeleri kartlarda yeniden çalış.' : ' Diğer oyuna ana ekrandan geçebilirsin.');
@@ -44,7 +45,7 @@
     playState.quiz.timer = null;
     clearTimeout(playState.match.timer);
     playState.match.timer = null;
-    const s = store.data.program.session;
+    const s = daily.program().session;
     const ids = daily.gameIds(playState.mode);
     s[playState.mode] = {
       pending : shuffle([...ids]), done : []
@@ -57,7 +58,7 @@
 
   function dailyShowQuiz() {
     daily.dailyGameStatus();
-    const s = store.data.program.session, game = s[playState.mode];
+    const s = daily.program().session, game = s[playState.mode];
     const c = daily.dailyCards().find(c => c.id === game.pending[0]), choices = $('quizChoices');
     choices.innerHTML = '';
     playState.quiz.locked = false;
@@ -82,7 +83,7 @@
   function dailyAnswerQuiz(button, ok, c, answer = c.tr) {
     if (daily.refreshDailyDay() || playState.quiz.locked)return;
     playState.quiz.locked = true;
-    const game = store.data.program.session[playState.mode], id = game.pending.shift();
+    const game = daily.program().session[playState.mode], id = game.pending.shift();
     if (ok) {
       game.done.push(id);
       c.quizCorrect = (c.quizCorrect || 0) + 1;
@@ -115,7 +116,7 @@
     daily.dailyGameStatus();
     const board = $('matchBoard');
     board.innerHTML = '';
-    const game = store.data.program.session.match, cards = daily.dailyCards();
+    const game = daily.program().session.match, cards = daily.dailyCards();
     playState.match.cards = game.pending.slice(0, 6).map(id => cards.find(c => c.id === id)).filter(Boolean);
     if (!playState.match.cards.length)return;
     // A final single word remains playable inside a deck that started with >=2 cards.
@@ -151,7 +152,7 @@
     if (playState.match.pick.length < 2)return;
     const en = playState.match.pick.find(b => b.dataset.type === 'en'), tr = playState.match.pick.find(b => b.dataset.type === 'tr');
     const card = playState.match.cards.find(c => c.id === en.dataset.id), ok = card.tr === tr.textContent;
-    const game = store.data.program.session.match;
+    const game = daily.program().session.match;
     if (ok) {
       // Equivalent translations can be swapped, but only the answered English word is credited.
       game.pending = game.pending.filter(id => id !== card.id);

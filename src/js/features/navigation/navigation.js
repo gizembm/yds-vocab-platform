@@ -12,6 +12,7 @@
     store.save();
     studyState.daily = false;
     playState.daily = false;
+    globalThis.Vocab.session.daily.deck = null;
     clearTimeout(playState.quiz.timer);
     playState.quiz.timer = null;
     clearTimeout(playState.match.timer);

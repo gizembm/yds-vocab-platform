@@ -49,6 +49,15 @@ Kartlar bitince günün oyunları açılır. Oyunlar yalnızca bugünün yeni ke
 
 Ana ekrandaki panel kelimeleri dört seviyede gösterir: `Yeni` (programa girmedi), `Öğreniliyor` (ilk tekrarını bekliyor), `Pekişiyor` (3, 7 ve 14 günlük basamaklarda) ve `Öğrenildi` (14 günlük tekrarı da bildin, artık 30 günde bir gelir). Öğrenilen kelimeler bir sonraki tekrar tarihleriyle listelenir.
 
+## Kategori meydan okuması
+
+Her kategori satırındaki `Meydan okuma` butonu o kategori için ayrı bir günlük program başlatır (örneğin `2025 YDS`). Kurallar 20 kelimelik programla aynıdır, yalnızca sayılar yarıya iner: 1–6. günlerde günde 10 yeni kelime, 7. gün genel tekrar; günde en çok 30 tekrar kartı ve toplam 40 kart. Kartlardan sonra aynı günlük oyunlar oynanır.
+
+- Meydan okuması süren kategorinin kelimeleri ana programdan çıkar; her kelimenin tek bir tekrar takvimi olur. Ana programda çalışılmış kelimeler basamak ve tekrar tarihleriyle taşınır.
+- Kategori satırında hafta/gün, yeni ve tekrar sayısı görünür; `Devam et` meydan okumayı açar. Birden fazla kategorinin meydan okuması aynı anda sürebilir.
+- Yeni kelimeler bitince meydan okuma tekrarlarla sürer; bütün kelimeler `Öğrenildi` seviyesine gelince satırda `Tamamlandı` yazar.
+- `Meydan okumayı bırak` kelimeleri ilerlemeleriyle ana programa geri verir. Kategoriye sonradan eklenen kelimeler meydan okumada yeni kelime olarak sıraya girer; kategori silinirse meydan okuması da silinir.
+
 ## Zor kelimelerim
 
 Kartlarda ve oyunlarda yapılan her hata kelimenin hata puanını artırır, doğru cevaplar azaltır. Puanı en yüksek 40 kelime ana ekranda `Zor kelimelerim` adlı sanal kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
