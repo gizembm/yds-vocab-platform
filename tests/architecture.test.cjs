@@ -328,3 +328,31 @@ test('each category row offers a challenge and shows its progress once started',
   assert.equal(button('Test', 'Meydan okuma'), undefined);
   assert.match(row('Test').querySelector('small').textContent, /Meydan okuma: 1\. hafta, 1\. gün · 2 yeni · 0 tekrar/);
 });
+
+test('each category lists its own hard words and can study and play them', () => {
+  const b = browser({ decks: {
+    A: [
+      { id: 'a1', en: 'abate', tr: 'azalmak', box: 1, due: Date.now() + 1e9, quizDifficulty: 4 },
+      { id: 'a2', en: 'bolster', tr: 'desteklemek', box: 1, due: 0 }
+    ],
+    B: [{ id: 'b1', en: 'curb', tr: 'dizginlemek', box: 1, due: 0, cardDifficulty: 2 }]
+  }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const row = name => b.elements.get('decks').children.find(el => el.querySelector('b').textContent === name);
+  const hardList = name => row(name).children.find(child => child.classes.has('hard-list'));
+  assert.equal(hardList('A').children[0].textContent, 'Zor kelimeler (1)');
+  assert.equal(hardList('A').children[2].children.map(item => item.children[0].textContent).join(), 'abate');
+  assert.equal(b.app.store.scopeLabel(b.app.store.hardScope('A')), 'A · zor kelimeler');
+  hardList('A').children[1].children.find(button => button.textContent === 'Çalış').onclick();
+  assert.equal(b.app.session.study.scope, b.app.store.hardScope('A'));
+  assert.equal(b.app.session.study.queue.map(card => card.id).join(), 'a1', 'hard words are studied even before they are due');
+  b.app.navigation.showHome();
+  hardList('B').children[1].children.find(button => button.textContent === 'Eşleştir').onclick();
+  assert.equal(b.app.session.play.scope, b.app.store.hardScope('B'));
+});
+
+test('a category without hard words has no hard word list', () => {
+  const b = browser({ decks: { A: [{ id: 'a1', en: 'abate', tr: 'azalmak', box: 1, due: 0 }] },
+    pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const row = b.elements.get('decks').children.find(el => el.querySelector('b').textContent === 'A');
+  assert.equal(row.children.some(child => child.classes.has('hard-list')), false);
+});

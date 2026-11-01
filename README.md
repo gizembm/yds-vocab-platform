@@ -28,7 +28,7 @@ Kurulum, sunucu veya hesap gerekmez: `index.html` dosyasını tarayıcıda açma
 - Günlük 20 kelimelik program: 1, 3, 7, 14 ve 30 gün aralıklı tekrar, her hafta bir genel tekrar günü
 - Kategori meydan okuması: her kategori için günde 10 kelimelik ayrı program (örneğin `2025 YDS`, `2024 YDS`)
 - Serbest çalışma: herhangi bir kategoriyi istediğin zaman Leitner kutularıyla çalışma
-- `Zor kelimelerim`: en çok hata yapılan 40 kelimeden otomatik oluşan kategori
+- `Zor kelimelerim`: en çok hata yapılan 40 kelimeden otomatik oluşan kategori; her kategorinin ayrıca kendi zor kelimeler listesi
 - `Öğrendiklerim` paneli: her kelimenin Yeni, Öğreniliyor, Pekişiyor veya Öğrenildi seviyesi
 
 **Oyunlar**
@@ -157,6 +157,8 @@ Her kelimenin bir hata puanı vardır. Puanı 2 ve üzeri olan en fazla 40 kelim
 - Hata puanı dört kaynağın toplamıdır: kartlar, Soru-Cevap, Eşleştirme ve Cümle Tamamla. Her kaynak 0–8 arasında tutulur.
 - Yanlış cevap ve `Bilemedim` +2, `Zorlandım` +1 ekler; doğru cevap 1 düşürür.
 - Kartlarda `Öğrendim`, puanı en yüksek kaynaktan düşürür. Böylece oyunlarda zorlanılan bir kelime kartlarla da listeden çıkarılabilir.
+
+Her kategorinin kendi zor kelimeleri de aynı kurallarla, kategori satırının altındaki `Zor kelimeler (N)` bölümünde listelenir. Bölüm açılınca yalnızca o kategorinin zor kelimeleriyle `Çalış`, `Eşleştir`, `Soru-Cevap` ve `Cümle Tamamla` oynanabilir. Zor kelime çalışmasında kartlar tekrar tarihini beklemeden, en zor kelimeden başlayarak gelir.
 
 ## Klavye kısayolları
 

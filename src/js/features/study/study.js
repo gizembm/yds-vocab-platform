@@ -16,7 +16,7 @@
       return;
     }
     const now = Date.now();
-    if (studyState.scope === config.HARD_SCOPE) {
+    if (store.isHardScope(studyState.scope)) {
       // Hard words are practised regardless of their free-study due date, hardest first.
       studyState.queue = study.studyCards();
     } else {

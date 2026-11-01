@@ -33,7 +33,8 @@
   // Mistake score: each difficulty grows on errors (+2, "hard" +1) and shrinks on correct answers (-1).
   store.difficulty = card => (card.cardDifficulty || 0) + (card.quizDifficulty || 0) +
     (card.matchDifficulty || 0) + (card.sentenceDifficulty || 0);
-  store.hardCards = () => store.allCards()
+  // All hard words, or only those of one category.
+  store.hardCards = (deck = null) => (deck === null ? store.allCards() : store.data.decks[deck] || [])
     .filter(card => store.difficulty(card) >= HARD_MIN_SCORE)
     .sort((a, b) => store.difficulty(b) - store.difficulty(a))
     .slice(0, HARD_LIMIT);
@@ -55,9 +56,17 @@
   });
   store.hasWord = (deckName, en, except = null) => (store.data.decks[deckName] || [])
     .some(card => card !== except && card.en.toLowerCase() === en.toLowerCase());
+  // A category's hard words use the scope "__hard__:<category>".
+  store.hardScope = deck => HARD_SCOPE + ':' + deck;
+  store.hardDeckOf = scope => typeof scope === 'string' && scope.startsWith(HARD_SCOPE + ':')
+    ? scope.slice(HARD_SCOPE.length + 1) : null;
+  store.isHardScope = scope => scope === HARD_SCOPE || store.hardDeckOf(scope) !== null;
   store.cardsOf = name => name === HARD_SCOPE ? store.hardCards()
-    : name ? store.data.decks[name] || [] : store.allCards();
-  store.scopeLabel = name => name === HARD_SCOPE ? 'Zor kelimelerim' : name || 'Tüm kategoriler';
+    : store.hardDeckOf(name) !== null ? store.hardCards(store.hardDeckOf(name))
+      : name ? store.data.decks[name] || [] : store.allCards();
+  store.scopeLabel = name => name === HARD_SCOPE ? 'Zor kelimelerim'
+    : store.hardDeckOf(name) !== null ? store.hardDeckOf(name) + ' · zor kelimeler'
+      : name || 'Tüm kategoriler';
   store.cardCat = card => Object.keys(store.data.decks)
     .find(name => store.data.decks[name].includes(card)) || '';
 })();

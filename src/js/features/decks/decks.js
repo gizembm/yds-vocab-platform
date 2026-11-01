@@ -73,6 +73,10 @@
         }, 'del');
       }
       if (scope === config.HARD_SCOPE)el.append(decks.hardWordList(cards));
+      if (deletable) {
+        const hard = store.hardCards(name);
+        if (hard.length)el.append(decks.hardWordList(hard, store.hardScope(name)));
+      }
       box.append(el);
     };
     const hard = store.hardCards();
@@ -82,11 +86,26 @@
   }
 
   // Collapsible list so the hard words can be read before practising them.
-  function hardWordList(cards) {
+  // With a scope (one category's hard words) it also carries that list's study and game buttons.
+  function hardWordList(cards, scope = null) {
     const details = document.createElement('details');
     details.className = 'hard-list';
     const summary = document.createElement('summary');
-    summary.textContent = 'Kelimeleri gör';
+    summary.textContent = scope ? 'Zor kelimeler (' + cards.length + ')' : 'Kelimeleri gör';
+    details.append(summary);
+    if (scope) {
+      const actions = document.createElement('div');
+      actions.className = 'deck-actions hard-actions';
+      for (const [label, start] of [['Çalış', study.startStudy], ['Eşleştir', matching.startMatch],
+        ['Soru-Cevap', quiz.startQuiz], ['Cümle Tamamla', sentence.startSentence]]) {
+        const button = document.createElement('button');
+        button.className = label === 'Çalış' ? '' : 'play';
+        button.textContent = label;
+        button.onclick = () => start(scope);
+        actions.append(button);
+      }
+      details.append(actions);
+    }
     const list = document.createElement('ul');
     cards.forEach(card => {
       const item = document.createElement('li');
@@ -102,7 +121,7 @@
       item.append(en, tr, score);
       list.append(item);
     });
-    details.append(summary, list);
+    details.append(list);
     return details;
   }
 
