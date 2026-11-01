@@ -39,6 +39,7 @@
   $('dailyReturn').onclick = app.navigation.showHome;
   $('editCard').onclick = () => app.words.openEditor();
   $('addWordOpen').onclick = () => app.words.openAdder();
+  $('wordSearch').oninput = () => app.words.renderSearch();
   $('wordSaveNext').onclick = () => app.words.saveEdit(true);
   $('wordForm').onsubmit = event => {
     event.preventDefault();

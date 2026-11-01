@@ -161,7 +161,7 @@ main>section:not([hidden]) {
 input,button {
   font: inherit;
 }
-input[type=text],input:not([type]) {
+input[type=text],input[type=search],input:not([type]) {
   flex: 1;
   min-width: 0;
   width: 100%;

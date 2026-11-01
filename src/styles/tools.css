@@ -1,4 +1,4 @@
-/* Hard words, word editor, backup panel and keyboard hints. */
+/* Hard words, word search, word editor, backup panel and keyboard hints. */
 .hard-deck {
   background: var(--rose-soft);
   border-color: var(--miss-line);
@@ -192,5 +192,46 @@ kbd {
 @media (hover: none) {
   .kbd-hint {
     display: none;
+  }
+}
+.word-search {
+  margin-bottom: 18px;
+}
+.word-search .hint {
+  margin: 10px 0 0;
+}
+.search-results {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  border-top: 1px solid var(--line);
+}
+.search-results li {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.2fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: .9rem;
+}
+.search-results li>* {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.search-results .chip {
+  justify-self: start;
+}
+.search-level {
+  color: var(--mut);
+  font-size: .8rem;
+}
+@media (max-width: 560px) {
+  .search-results li {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    row-gap: 6px;
+  }
+  .search-level {
+    justify-self: end;
   }
 }

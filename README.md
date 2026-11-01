@@ -40,6 +40,7 @@ Kurulum, sunucu veya hesap gerekmez: `index.html` dosyasını tarayıcıda açma
 **Kelime yönetimi**
 - CSV, TXT ve XML dosyasından toplu yükleme; tekrar eden ve hatalı satırlar için yükleme raporu
 - Tek tek kelime ekleme, kart ekranından düzenleme ve silme
+- Kelime arama: İngilizce bir kelimenin listede olup olmadığını ve hangi kategoride olduğunu gösterir
 - İngilizce kelime ve örnek cümleler için sesli okuma
 - JSON yedek indirme ve başka bir cihaza geri yükleme
 
@@ -160,6 +161,10 @@ Her kelimenin bir hata puanı vardır. Puanı 2 ve üzeri olan en fazla 40 kelim
 
 Her kategorinin kendi zor kelimeleri de aynı kurallarla, kategori satırının altındaki `Zor kelimeler (N)` bölümünde listelenir. Bölüm açılınca yalnızca o kategorinin zor kelimeleriyle `Çalış`, `Eşleştir`, `Soru-Cevap` ve `Cümle Tamamla` oynanabilir. Zor kelime çalışmasında kartlar tekrar tarihini beklemeden, en zor kelimeden başlayarak gelir.
 
+### Kelime arama
+
+Ana ekrandaki `İngilizce kelime ara` kutusu bütün kategorilerde yalnızca İngilizce kelimeleri arar (büyük/küçük harf fark etmez). Birebir eşleşen kelimeler önce, sonra aranan ifadeyle başlayan ve onu içeren kelimeler gelir. Her sonuçta Türkçe karşılık, kelimenin bulunduğu kategori ve öğrenme seviyesi görünür; ilk 20 sonuç listelenir.
+
 ## Klavye kısayolları
 
 | Tuş | İşlev |
@@ -207,7 +212,7 @@ src/
       progress/            # Öğrendiklerim seviyeleri ve listesi
       shortcuts/           # Klavye kısayolları
       study/               # Kartlar ve serbest Leitner çalışması
-      words/               # Elle ekleme, düzenleme ve silme
+      words/               # Elle ekleme, düzenleme, silme ve kelime arama
     bootstrap.js           # Olay bağlantıları ve ilk ekranın açılması
   styles/                  # Tema, düzen, ekran ve mobil stilleri
 scripts/

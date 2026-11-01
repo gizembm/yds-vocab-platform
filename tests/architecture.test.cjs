@@ -356,3 +356,28 @@ test('a category without hard words has no hard word list', () => {
   const row = b.elements.get('decks').children.find(el => el.querySelector('b').textContent === 'A');
   assert.equal(row.children.some(child => child.classes.has('hard-list')), false);
 });
+
+test('word search finds English words in every category and says where they are', () => {
+  const b = browser({ decks: {
+    '2025 YDS': [
+      { id: 'a', en: 'Abate', tr: 'azalmak', box: 1, due: 0 },
+      { id: 'b', en: 'abatement', tr: 'azalma', box: 1, due: 0 }
+    ],
+    '2024 YDS': [{ id: 'c', en: 'abate', tr: 'dinmek', box: 1, due: 0 }]
+  }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const search = value => {
+    b.elements.get('wordSearch').value = value;
+    b.elements.get('wordSearch').oninput();
+    return b.elements.get('wordSearchResults').children
+      .map(item => item.children[0].textContent + '@' + item.children[2].textContent);
+  };
+  assert.deepEqual(search('  ABATE '), ['abate@2024 YDS', 'Abate@2025 YDS', 'abatement@2025 YDS']);
+  assert.match(b.elements.get('wordSearchStatus').textContent, /"ABATE" 2 kategoride var\. 3 sonuç\./);
+  assert.deepEqual(search('ment'), ['abatement@2025 YDS']);
+  assert.match(b.elements.get('wordSearchStatus').textContent, /birebir yok/);
+  assert.deepEqual(search('azalmak'), [], 'Turkish meanings are not searched');
+  assert.equal(b.elements.get('wordSearchStatus').textContent, '"azalmak" hiçbir kategoride yok.');
+  assert.equal(b.elements.get('wordSearchResults').hidden, true);
+  search('');
+  assert.equal(b.elements.get('wordSearchStatus').hidden, true);
+});

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const { config, store, decks, study, matching, quiz, sentence, daily, backup, progress } = globalThis.Vocab;
+  const { config, store, decks, study, matching, quiz, sentence, daily, backup, progress, words } = globalThis.Vocab;
   const { $, dstr } = globalThis.Vocab.utils;
 
   function renderStats() {
@@ -22,6 +22,7 @@
     daily.renderDaily();
     backup.renderBackup();
     progress.renderMastery();
+    words.renderSearch();
     const box = $('decks');
     box.innerHTML = '';
     const names = Object.keys(store.data.decks);

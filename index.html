@@ -34,6 +34,11 @@
       </details>
     </div>
     <h2 class="section-heading">Kategorilerin</h2>
+    <div class="word-search">
+      <input id="wordSearch" type="search" lang="en" autocomplete="off" spellcheck="false" placeholder="İngilizce kelime ara" aria-label="İngilizce kelime ara" aria-describedby="wordSearchStatus">
+      <p id="wordSearchStatus" class="hint" role="status" hidden></p>
+      <ul id="wordSearchResults" class="search-results" hidden></ul>
+    </div>
     <div id="decks"></div>
     <div class="panel import-panel">
       <h2>Kelime ekle</h2>
@@ -160,6 +165,7 @@
 <script src="src/js/features/daily/challenges.js"></script>
 <script src="src/js/features/shortcuts/shortcuts.js"></script>
 <script src="src/js/features/words/editor.js"></script>
+<script src="src/js/features/words/search.js"></script>
 <script src="src/js/features/backup/backup.js"></script>
 <script src="src/js/features/progress/mastery.js"></script>
 <script src="src/js/bootstrap.js"></script>
