@@ -149,3 +149,42 @@ test('mastery counts words from every program',()=>{
   const g=setup(20);g.run("S.decks.YDS=S.decks.Test.splice(0,10);startChallenge('YDS');");g.learn();
   assert.equal(g.value('Vocab.progress.counts()').learning,10);
 });
+
+const answerTyping=(g,value)=>{g.elements.get('typingInput').value=value;g.run('Vocab.typing.submitTyping()');};
+const rightWord=g=>g.run('Vocab.session.play.quiz.current.en');
+
+test('the typing game runs inside a challenge and does not block the next day',()=>{
+  const g=setup(6);g.run("startChallenge('Test')");g.learn();
+  assert.ok(g.value('optionalGames()').includes('typing'));
+  assert.ok(!g.value('requiredGames()').includes('typing'));
+  g.run("startDailyGame('typing')");
+  assert.equal(g.run('playDaily'),true);
+  assert.equal(g.value('S.lastView').program,'Test');
+  assert.equal(g.value('program().session.typing').pending.length,6);
+  assert.equal(g.run('S.program'),undefined,'the main program stays untouched');
+  answerTyping(g,rightWord(g));
+  assert.equal(g.value('program().session.typing').done.length,1);
+  g.run('Vocab.typing.showTyping()');
+  const missed=g.run('Vocab.session.play.quiz.current.id');
+  answerTyping(g,'zzzzzz');
+  assert.equal(g.value('program().session.typing').pending[2],missed);
+  assert.ok(g.value('program().session').pending.includes(missed),'a mistake returns the word to card study');
+  g.learn();
+  for(const mode of ['quiz','match','sentence'])g.run(`program().session.${mode}.pending=[];`);
+  assert.equal(g.run('gamesComplete()'),true);
+});
+
+test('the typing game also runs in the main daily program and restarts',()=>{
+  const g=setup(4);g.begin();g.learn();g.run("startDailyGame('typing')");
+  assert.equal(session(g).typing.pending.length,4);
+  answerTyping(g,rightWord(g));
+  g.run('restartDailyGame()');
+  assert.equal(session(g).typing.done.length,0);
+  assert.equal(session(g).typing.pending.length,4);
+});
+
+test('old daily sessions gain the typing game',()=>{
+  const g=setup(4);g.begin();g.learn();g.run('delete S.program.session.typing;save();');
+  const restored=setup(0,g.saved());restored.run("startDailyGame('typing')");
+  assert.equal(session(restored).typing.pending.length,4);
+});

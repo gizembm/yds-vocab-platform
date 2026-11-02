@@ -11,6 +11,8 @@ Kurulum, sunucu veya hesap gerekmez: `index.html` dosyasını tarayıcıda açma
 | ![Çevrilmiş kelime kartı ve puanlama butonları](docs/screenshots/study.png) | ![Dört şıklı Soru-Cevap oyunu](docs/screenshots/quiz.png) |
 | **Eşleştirme** | **Cümle Tamamla** |
 | ![İngilizce–Türkçe eşleştirme oyunu](docs/screenshots/match.png) | ![Boşluk doldurmalı Cümle Tamamla oyunu](docs/screenshots/sentence.png) |
+| **Kelime Yaz** | |
+| ![Türkçe karşılığı verilen kelimenin İngilizcesini yazma oyunu](docs/screenshots/typing.png) | |
 
 ## İçindekiler
 
@@ -30,12 +32,14 @@ Kurulum, sunucu veya hesap gerekmez: `index.html` dosyasını tarayıcıda açma
 - Serbest çalışma: herhangi bir kategoriyi istediğin zaman Leitner kutularıyla çalışma
 - `Zor kelimelerim`: en çok hata yapılan 40 kelimeden otomatik oluşan kategori; her kategorinin ayrıca kendi zor kelimeler listesi
 - `Öğrendiklerim` paneli: her kelimenin Yeni, Öğreniliyor, Pekişiyor veya Öğrenildi seviyesi
+- En son çalışılan kategori listenin en üstünde
 
 **Oyunlar**
 - Soru-Cevap: İngilizce kelimenin dört şıktan Türkçe karşılığını bulma
 - Eşleştirme: İngilizce ve Türkçe kelimeleri eşleştirme
 - Cümle Tamamla: örnek cümledeki boşluğu dört İngilizce seçenekten doldurma
 - Eş Anlam Bul ve Zıt Anlam Bul
+- Kelime Yaz: Türkçe karşılığı verilen kelimenin İngilizcesini yazma
 
 **Kelime yönetimi**
 - CSV, TXT ve XML dosyasından toplu yükleme; tekrar eden ve hatalı satırlar için yükleme raporu
@@ -127,9 +131,17 @@ Zamanı gelen tekrarlar 60'ı aşarsa o gün yeni kelime açılmaz ve boşalan y
 | `Zorlandım` | Öğrenilir, bugün bir kez daha gösterilir | Bir basamak düşer, yarın gelir |
 | `Bilemedim` | Sıfırlanır, bugün tekrar sorulur | Sıfırlanır, bugün tekrar sorulur |
 
-**Günün oyunları**: Kartlar bitince Test, Eşleştirme ve Cümle Tamamla açılır; Eş Anlam Bul ve Zıt Anlam Bul isteğe bağlıdır. Oyunlar yalnızca bugünün yeni kelimeleri ve kartlarda zorlanılan kelimelerle oynanır; eski tekrarlar yalnızca kartla geçilir. Oyunda yanlış yapılan kelime bir basamak düşer, yarın tekrar gelir ve bugün kart çalışmasına geri eklenir (eşleştirmede yalnızca seçilen İngilizce kelime hatalı sayılır). Kartlar ve zorunlu oyunlar bitince `Sonraki güne geç` ile hemen yeni güne geçilebilir.
+**Günün oyunları**: Kartlar bitince Test, Eşleştirme ve Cümle Tamamla açılır; Eş Anlam Bul, Zıt Anlam Bul ve Kelime Yaz isteğe bağlıdır. Oyunlar yalnızca bugünün yeni kelimeleri ve kartlarda zorlanılan kelimelerle oynanır; eski tekrarlar yalnızca kartla geçilir. Oyunda yanlış yapılan kelime bir basamak düşer, yarın tekrar gelir ve bugün kart çalışmasına geri eklenir (eşleştirmede yalnızca seçilen İngilizce kelime hatalı sayılır). Kartlar ve zorunlu oyunlar bitince `Sonraki güne geç` ile hemen yeni güne geçilebilir.
 
 **Serbest çalışma** günlük programı yalnızca hatalarda etkiler: öğrenilmiş bir kelimede yapılan hata onu bir basamak düşürüp yarınki tekrara ekler; doğru cevaplar takvimi değiştirmez.
+
+### Kelime Yaz
+
+Türkçe karşılık ve varsa kelimesi boş bırakılmış örnek cümle gösterilir; İngilizcesi yazılıp `Enter` ile kontrol edilir. Bütün kategorilerde, zor kelime listelerinde, günlük programda ve meydan okumalarda oynanır.
+
+- Büyük/küçük harf, fazla boşluk ve Türkçe klavyeden gelen `İ`/`ı` hata sayılmaz.
+- Dört harf veya daha uzun bir kelimede tek harflik hatada bir hak daha verilir; ikinci hatalı deneme yanlış sayılır.
+- Aynı Türkçe karşılığa sahip başka bir kelime de doğru kabul edilir.
 
 ### Kategori meydan okuması
 
@@ -155,11 +167,11 @@ Her kategori satırındaki `Meydan okuma` butonu, o kategori için ayrı bir gü
 
 Her kelimenin bir hata puanı vardır. Puanı 2 ve üzeri olan en fazla 40 kelime, ana ekranda `Zor kelimelerim` adlı kategoride toplanır; kartlar ve bütün oyunlar bu listeyle de oynanabilir.
 
-- Hata puanı dört kaynağın toplamıdır: kartlar, Soru-Cevap, Eşleştirme ve Cümle Tamamla. Her kaynak 0–8 arasında tutulur.
+- Hata puanı beş kaynağın toplamıdır: kartlar, Soru-Cevap, Eşleştirme, Cümle Tamamla ve Kelime Yaz. Her kaynak 0–8 arasında tutulur.
 - Yanlış cevap ve `Bilemedim` +2, `Zorlandım` +1 ekler; doğru cevap 1 düşürür.
 - Kartlarda `Öğrendim`, puanı en yüksek kaynaktan düşürür. Böylece oyunlarda zorlanılan bir kelime kartlarla da listeden çıkarılabilir.
 
-Her kategorinin kendi zor kelimeleri de aynı kurallarla, kategori satırının altındaki `Zor kelimeler (N)` bölümünde listelenir. Bölüm açılınca yalnızca o kategorinin zor kelimeleriyle `Çalış`, `Eşleştir`, `Soru-Cevap` ve `Cümle Tamamla` oynanabilir. Zor kelime çalışmasında kartlar tekrar tarihini beklemeden, en zor kelimeden başlayarak gelir.
+Her kategorinin kendi zor kelimeleri de aynı kurallarla, kategori satırının altındaki `Zor kelimeler (N)` bölümünde listelenir. Bölüm açılınca yalnızca o kategorinin zor kelimeleriyle `Çalış`, `Eşleştir`, `Soru-Cevap`, `Cümle Tamamla` ve `Kelime Yaz` oynanabilir. Zor kelime çalışmasında kartlar tekrar tarihini beklemeden, en zor kelimeden başlayarak gelir.
 
 ### Kelime arama
 
@@ -206,7 +218,7 @@ src/
       backup/              # JSON yedek indirme/yükleme
       daily/               # Günlük program, kategori meydan okuması, günün oyunları
       decks/               # Kategori listesi, istatistikler, kategori ekleme
-      games/               # Eşleştirme, Soru-Cevap, Cümle Tamamla
+      games/               # Eşleştirme, Soru-Cevap, Cümle Tamamla, Kelime Yaz
       import/              # CSV/XML okuma ve yükleme raporu
       navigation/          # Ana ekran ve oyun ekranı geçişleri
       progress/            # Öğrendiklerim seviyeleri ve listesi

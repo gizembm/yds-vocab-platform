@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const { config, store, decks, study, matching, quiz, sentence, daily, backup, progress, words } = globalThis.Vocab;
+  const { config, store, decks, study, matching, quiz, sentence, typing, daily, backup, progress, words } = globalThis.Vocab;
   const { $, dstr } = globalThis.Vocab.utils;
 
   function renderStats() {
@@ -59,6 +59,7 @@
         add(label, () => quiz.startRelation(scope, relation), 'play', !cards.some(card => String(card[relation] || '').trim()));
       }
       add('Cümle Tamamla', () => sentence.startSentence(scope));
+      add('Kelime Yaz', () => typing.startTyping(scope));
       if (deletable && !challenge)add('Meydan okuma', () => daily.startChallenge(name), 'challenge', !cards.length);
       if (challenge) {
         add('Meydan okumayı bırak', () => {
@@ -80,10 +81,13 @@
       }
       box.append(el);
     };
+    // The last studied category sits above everything else.
+    const ordered = store.orderedDecks(), latest = store.data.recentDecks?.includes(ordered[0]) ? ordered[0] : null;
+    if (latest)mk(latest, store.data.decks[latest], latest, true);
     const hard = store.hardCards();
     if (hard.length)mk('Zor kelimelerim', hard, config.HARD_SCOPE, false);
     if (names.length > 1)mk('Tüm kategoriler', names.flatMap(n => store.data.decks[n]), null, false);
-    names.forEach(n => mk(n, store.data.decks[n], n, true));
+    ordered.filter(n => n !== latest).forEach(n => mk(n, store.data.decks[n], n, true));
   }
 
   // Collapsible list so the hard words can be read before practising them.
@@ -98,7 +102,7 @@
       const actions = document.createElement('div');
       actions.className = 'deck-actions hard-actions';
       for (const [label, start] of [['Çalış', study.startStudy], ['Eşleştir', matching.startMatch],
-        ['Soru-Cevap', quiz.startQuiz], ['Cümle Tamamla', sentence.startSentence]]) {
+        ['Soru-Cevap', quiz.startQuiz], ['Cümle Tamamla', sentence.startSentence], ['Kelime Yaz', typing.startTyping]]) {
         const button = document.createElement('button');
         button.className = label === 'Çalış' ? '' : 'play';
         button.textContent = label;
@@ -129,6 +133,7 @@
   // A deleted category takes its challenge with it.
   function removeDeck(name) {
     delete store.data.decks[name];
+    store.data.recentDecks = (store.data.recentDecks || []).filter(deck => deck !== name);
     daily.removeChallenge(name);
     store.save();
     decks.renderDecks();

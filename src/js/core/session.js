@@ -9,7 +9,7 @@
   session.play = {
     scope: null, mode: '', daily: false,
     match: { pick: [], cards: [], timer: null, seen: new Map() },
-    quiz: { list: [], step: 0, timer: null, locked: false }
+    quiz: { list: [], step: 0, timer: null, locked: false, current: null, retried: false }
   };
   // Category whose challenge is open; null means the main daily program.
   session.daily = { deck: null };

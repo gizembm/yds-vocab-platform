@@ -38,6 +38,7 @@
     $('all').hidden = false;
     $('dailyStudyDone').hidden = true;
     studyState.scope = name;
+    store.touchDeck(name);
     store.data.lastView = { type: 'study', scope: name || null };
     store.save();
     studyState.forceAll = false;

@@ -22,6 +22,7 @@
     matching: {},
     quiz: {},
     sentence: {},
+    typing: {},
     daily: {},
     audio: {},
     shortcuts: {},

@@ -16,7 +16,7 @@
       box.textContent = s.pending.length + ' kelime için kart çalışması gerekiyor.';
       return;
     }
-    const labels = { quiz : 'Test', match : 'E\u015fle\u015ftirme', sentence : 'C\u00fcmle Tamamla', synonyms : 'E\u015f Anlam Bul', antonyms : 'Z\u0131t Anlam Bul' };
+    const labels = { quiz : 'Test', match : 'E\u015fle\u015ftirme', sentence : 'C\u00fcmle Tamamla', synonyms : 'E\u015f Anlam Bul', antonyms : 'Z\u0131t Anlam Bul', typing : 'Kelime Yaz' };
     const required = daily.requiredGames(), optional = daily.optionalGames();
     for (const mode of [...required, ...optional]) {
       const button = document.createElement('button');
@@ -35,7 +35,7 @@
     const note = document.createElement('p');
     note.className = 'hint';
     note.textContent = required.length
-      ? 'Oyunlar bugünün yeni kelimeleri ve kartlarda zorlandığın kelimelerle oynanır. Eş ve zıt anlam oyunları isteğe bağlıdır; yapmasan da sonraki güne geçebilirsin.'
+      ? 'Oyunlar bugünün yeni kelimeleri ve kartlarda zorlandığın kelimelerle oynanır. Eş anlam, zıt anlam ve yazma oyunları isteğe bağlıdır; yapmasan da sonraki güne geçebilirsin.'
       : 'Bugün oyun gerektiren yeni veya hatalı kelime yok.';
     box.append(note);
   }

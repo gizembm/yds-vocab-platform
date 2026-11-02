@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const { store, decks, navigation, matching, sentence, daily } = globalThis.Vocab;
+  const { store, decks, navigation, matching, sentence, typing, daily } = globalThis.Vocab;
   const { $, shuffle } = globalThis.Vocab.utils;
 
   const { study: studyState, play: playState } = globalThis.Vocab.session;
@@ -23,8 +23,9 @@
     if (game.pending === null)game.pending = shuffle([...ids]);
     store.save();
     $('gameAgain').textContent = 'Turu yeniden başlat';
-    document.getElementById('playTitle').textContent = mode === 'sentence' ? 'G\u00fcnl\u00fck C\u00fcmle Tamamla' : mode === 'quiz' ? 'G\u00fcnl\u00fck test' : mode === 'match' ? 'G\u00fcnl\u00fck e\u015fle\u015ftirme' : mode === 'synonyms' ? 'G\u00fcnl\u00fck E\u015f Anlam Bul' : 'G\u00fcnl\u00fck Z\u0131t Anlam Bul';
+    document.getElementById('playTitle').textContent = mode === 'sentence' ? 'G\u00fcnl\u00fck C\u00fcmle Tamamla' : mode === 'quiz' ? 'G\u00fcnl\u00fck test' : mode === 'match' ? 'G\u00fcnl\u00fck e\u015fle\u015ftirme' : mode === 'synonyms' ? 'G\u00fcnl\u00fck E\u015f Anlam Bul' : mode === 'typing' ? 'G\u00fcnl\u00fck Kelime Yaz' : 'G\u00fcnl\u00fck Z\u0131t Anlam Bul';
     if (mode === 'sentence')sentence.showSentence();
+    else if (mode === 'typing')typing.showTyping();
     else if (mode !== 'match')daily.dailyShowQuiz();
     else daily.dailyBuildMatch();
   }
@@ -35,7 +36,7 @@
     if ($('nextDailyDay'))$('nextDailyDay').hidden = !daily.gamesComplete(s);
     $('playInfo').textContent = daily.programLabel() + ' · ' + game.done.length + ' / ' + total + ' tamamlandı';
     $('playHint').textContent = game.pending.length
-    ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : 'Bugünün yeni kelimeleri ve zorlandıkların. ') + 'Yanlışlar kart çalışmasına da geri döner.'
+    ? (playState.mode === 'sentence' ? 'Boşluğu dört seçenekten doğru İngilizce kelimeyle tamamla. ' : playState.mode === 'typing' ? 'Türkçe karşılığı verilen kelimenin İngilizcesini yaz. ' : 'Bugünün yeni kelimeleri ve zorlandıkların. ') + 'Yanlışlar kart çalışmasına da geri döner.'
     : 'Tur tamamlandı!' + (s.pending.length ? ' Yanlış yaptığın kelimeleri kartlarda yeniden çalış.' : ' Diğer oyuna ana ekrandan geçebilirsin.');
   }
 
@@ -52,6 +53,7 @@
     };
     store.save();
     if (playState.mode === 'sentence')sentence.showSentence();
+    else if (playState.mode === 'typing')typing.showTyping();
     else if (playState.mode !== 'match')daily.dailyShowQuiz();
     else daily.dailyBuildMatch();
   }

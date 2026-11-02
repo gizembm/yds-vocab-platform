@@ -102,6 +102,9 @@ const data = {
   await run(() => Vocab.sentence.startSentence('2025 YDS'));
   await shot('sentence.png');
 
+  await run(() => Vocab.typing.startTyping('2025 YDS'));
+  await shot('typing.png');
+
   await browser.close();
   console.log('Ekran görüntüleri kaydedildi: ' + out);
 })().catch(e => { console.error(e); process.exit(1); });

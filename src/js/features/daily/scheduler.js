@@ -17,9 +17,9 @@
   const limits = p => p && p.deck
     ? { newPerDay: 10, maxReviews: 30, maxDayCards: 40 }
     : { newPerDay: NEW_PER_DAY, maxReviews: MAX_REVIEWS, maxDayCards: NEW_PER_DAY + MAX_REVIEWS };
-  const GAME_MODES = ['quiz', 'match', 'sentence', 'synonyms', 'antonyms'];
+  const GAME_MODES = ['quiz', 'match', 'sentence', 'synonyms', 'antonyms', 'typing'];
   // Offered in the daily program but never required to move to the next day.
-  const OPTIONAL_GAMES = ['synonyms', 'antonyms'];
+  const OPTIONAL_GAMES = ['synonyms', 'antonyms', 'typing'];
   const relationTerms = (card, relation) => String(card[relation] || '').split(/[;,/|]/).map(x => x.trim()).filter(Boolean);
 
   const programDate = (time = Date.now()) => new Intl.DateTimeFormat('en-CA', {
@@ -66,6 +66,7 @@
     if (!GAME_MODES.includes(mode))return false;
     const ids = daily.gameIds(mode, pool), options = daily.dailyCards();
     if (!ids.length)return false;
+    if (mode === 'typing')return true;
     if (mode === 'match')return ids.length >= 2;
     if (mode === 'quiz')return new Set(options.map(c => c.tr)).size >= 2;
     if (mode === 'sentence')return new Set(store.allCards().map(c => sentence.englishKey(c.en))).size >= 4;

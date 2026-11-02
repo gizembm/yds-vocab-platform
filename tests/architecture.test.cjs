@@ -381,3 +381,84 @@ test('word search finds English words in every category and says where they are'
   search('');
   assert.equal(b.elements.get('wordSearchStatus').hidden, true);
 });
+
+test('the last studied category moves to the top of the list', () => {
+  const b = browser({ decks: {
+    A: [{ id: 'a', en: 'abate', tr: 'azalmak', box: 1, due: 0, cardDifficulty: 2 }],
+    B: [{ id: 'b', en: 'curb', tr: 'dizginlemek', box: 1, due: 0 }],
+    C: [{ id: 'c', en: 'hinder', tr: 'engellemek', box: 1, due: 0 }]
+  }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const order = () => b.elements.get('decks').children.map(el => el.querySelector('b').textContent).join();
+  assert.equal(order(), 'Zor kelimelerim,Tüm kategoriler,A,B,C');
+  b.app.study.startStudy('B');
+  b.app.navigation.showHome();
+  assert.equal(order(), 'B,Zor kelimelerim,Tüm kategoriler,A,C');
+  b.app.quiz.startQuiz('C');
+  b.app.navigation.showHome();
+  assert.equal(order(), 'C,Zor kelimelerim,Tüm kategoriler,B,A');
+  b.app.typing.startTyping(b.app.store.hardScope('A'));
+  b.app.navigation.showHome();
+  assert.equal(order(), 'A,Zor kelimelerim,Tüm kategoriler,C,B', 'studying hard words of a category counts');
+  b.app.study.startStudy(null);
+  b.app.navigation.showHome();
+  assert.equal(order(), 'A,Zor kelimelerim,Tüm kategoriler,C,B', 'studying all categories changes nothing');
+  b.app.decks.removeDeck('A');
+  assert.equal(order(), 'C,Tüm kategoriler,B');
+});
+
+test('typing game grades the written English word', () => {
+  const b = browser({ decks: { Test: [
+    { id: 'a', en: 'inevitable', tr: 'kaçınılmaz', ex: 'Change is inevitable.', box: 1, due: 0 },
+    { id: 'b', en: 'abate', tr: 'azalmak', box: 1, due: 0 },
+    { id: 'c', en: 'diminish', tr: 'azalmak', box: 1, due: 0 }
+  ] }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const { typing, session } = b.app, card = id => b.app.store.data.decks.Test.find(c => c.id === id);
+  assert.equal(typing.gradeAnswer('  İNEVİTABLE ', card('a')), 'correct', 'Turkish capitals and spaces are forgiven');
+  assert.equal(typing.gradeAnswer('ınevıtable', card('a')), 'correct');
+  assert.equal(typing.gradeAnswer('inevitabl', card('a')), 'close');
+  assert.equal(typing.gradeAnswer('inevitible', card('a')), 'close');
+  assert.equal(typing.gradeAnswer('inevtble', card('a')), 'wrong');
+  assert.equal(typing.gradeAnswer('diminish', card('b')), 'correct', 'a word with the same meaning is right');
+
+  typing.startTyping('Test');
+  assert.equal(b.elements.get('typingForm').hidden, false);
+  assert.equal(b.elements.get('quizBox').classes.has('typing-mode'), true);
+  const answer = value => {
+    b.elements.get('typingInput').value = value;
+    b.elements.get('typingForm').onsubmit({ preventDefault() {} });
+  };
+  session.play.quiz.current = card('a');
+  answer('   ');
+  assert.equal(session.play.quiz.locked, false, 'an empty answer is ignored');
+  answer('inevitabl');
+  assert.equal(session.play.quiz.locked, false, 'a one-letter slip gets one more try');
+  assert.equal(card('a').typingDifficulty, undefined);
+  assert.match(b.elements.get('quizFeedback').textContent, /Tekrar dene/);
+  answer('inevitabl');
+  assert.equal(session.play.quiz.locked, true, 'the second slip counts as wrong');
+  assert.equal(card('a').typingDifficulty, 2);
+  assert.match(b.elements.get('quizFeedback').textContent, /Doğru cevap: inevitable/);
+  assert.equal(b.app.store.hardCards().map(c => c.id).join(), 'a', 'typing mistakes count towards hard words');
+  const points = b.app.store.data.pts;
+  session.play.quiz.locked = false;
+  session.play.quiz.retried = false;
+  answer('inevitable');
+  assert.equal(card('a').typingDifficulty, 1);
+  assert.equal(b.app.store.data.pts, points + 5);
+  assert.equal(b.saved().lastView.mode, 'typing');
+});
+
+test('the typing prompt never shows the answer and every category row offers the game', () => {
+  const b = browser({ decks: { Test: [
+    { id: 'a', en: 'abate', tr: 'azalmak', ex: 'The abating storm passed.', box: 1, due: 0, cardDifficulty: 2 }
+  ] }, pts: 0, streak: 0, last: '', today: 0, cur: null });
+  const row = b.elements.get('decks').children.find(el => el.querySelector('b').textContent === 'Test');
+  const hardList = row.children.find(child => child.classes.has('hard-list'));
+  assert.ok(hardList.children[1].children.find(button => button.textContent === 'Kelime Yaz'));
+  row.children[1].children.find(button => button.textContent === 'Kelime Yaz').onclick();
+  assert.equal(b.app.session.play.mode, 'typing');
+  assert.equal(b.elements.get('quizWord').textContent, 'azalmak');
+  assert.equal(b.elements.get('quizExample').textContent, '', 'a sentence that cannot be blanked is left out');
+  b.app.quiz.startQuiz('Test');
+  assert.equal(b.elements.get('typingForm').hidden, true, 'other games hide the answer box');
+});

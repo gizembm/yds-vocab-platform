@@ -31,6 +31,7 @@
   function openChallenge(deck) {
     if (!challengeOf(deck))return;
     session.daily.deck = deck;
+    store.touchDeck(deck);
     daily.startDailyStudy();
   }
 

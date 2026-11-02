@@ -32,7 +32,7 @@
 
   // Mistake score: each difficulty grows on errors (+2, "hard" +1) and shrinks on correct answers (-1).
   store.difficulty = card => (card.cardDifficulty || 0) + (card.quizDifficulty || 0) +
-    (card.matchDifficulty || 0) + (card.sentenceDifficulty || 0);
+    (card.matchDifficulty || 0) + (card.sentenceDifficulty || 0) + (card.typingDifficulty || 0);
   // All hard words, or only those of one category.
   store.hardCards = (deck = null) => (deck === null ? store.allCards() : store.data.decks[deck] || [])
     .filter(card => store.difficulty(card) >= HARD_MIN_SCORE)
@@ -44,7 +44,7 @@
   // A correct answer lowers the total score, taken from the largest field, so a word that
   // became hard through games can also leave the hard list from the flashcards.
   store.easeDifficulty = card => {
-    const fields = ['cardDifficulty', 'quizDifficulty', 'matchDifficulty', 'sentenceDifficulty'];
+    const fields = ['cardDifficulty', 'quizDifficulty', 'matchDifficulty', 'sentenceDifficulty', 'typingDifficulty'];
     const field = fields.reduce((a, b) => (card[b] || 0) > (card[a] || 0) ? b : a);
     if (card[field] > 0)card[field]--;
   };
@@ -67,6 +67,26 @@
   store.scopeLabel = name => name === HARD_SCOPE ? 'Zor kelimelerim'
     : store.hardDeckOf(name) !== null ? store.hardDeckOf(name) + ' · zor kelimeler'
       : name || 'Tüm kategoriler';
+  // Most recently studied categories first; the rest keep their original order.
+  store.touchDeck = scope => {
+    const deck = store.hardDeckOf(scope) ?? scope;
+    if (!deck || !store.data.decks[deck])return;
+    store.data.recentDecks = [deck, ...(store.data.recentDecks || []).filter(name => name !== deck && store.data.decks[name])];
+  };
+  store.orderedDecks = () => {
+    const recent = (store.data.recentDecks || []).filter(name => store.data.decks[name]);
+    return [...recent, ...Object.keys(store.data.decks).filter(name => !recent.includes(name))];
+  };
+  // Most recently studied categories first; the rest keep their original order.
+  store.touchDeck = scope => {
+    const deck = store.hardDeckOf(scope) ?? scope;
+    if (!deck || !store.data.decks[deck])return;
+    store.data.recentDecks = [deck, ...(store.data.recentDecks || []).filter(name => name !== deck && store.data.decks[name])];
+  };
+  store.orderedDecks = () => {
+    const recent = (store.data.recentDecks || []).filter(name => store.data.decks[name]);
+    return [...recent, ...Object.keys(store.data.decks).filter(name => !recent.includes(name))];
+  };
   store.cardCat = card => Object.keys(store.data.decks)
     .find(name => store.data.decks[name].includes(card)) || '';
 })();

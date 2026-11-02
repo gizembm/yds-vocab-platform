@@ -36,6 +36,7 @@
     playState.match.pick = [];
     playState.mode = mode;
     playState.scope = name;
+    store.touchDeck(name);
     store.data.lastView = { type: 'play', mode, scope: name || null };
     store.save();
     $('home').hidden = true;
@@ -44,7 +45,8 @@
     $('playInfo').textContent = store.scopeLabel(name) + ' · ' + store.cardsOf(name).length + ' kart';
     $('matchBoard').hidden = mode !== 'match';
     $('quizBox').hidden = mode === 'match';
-    $('quizBox').className = 'quiz-box' + (mode === 'sentence' ? ' sentence-mode' : '');
+    $('quizBox').className = 'quiz-box' + (mode === 'sentence' ? ' sentence-mode' : mode === 'typing' ? ' typing-mode' : '');
+    $('typingForm').hidden = mode !== 'typing';
   }
 
   Object.assign(navigation, {

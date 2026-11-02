@@ -22,6 +22,7 @@
     const { mode, scope } = app.session.play;
     if (mode === 'match') return app.matching.buildMatch();
     if (mode === 'sentence') return app.sentence.startSentence(scope);
+    if (mode === 'typing') return app.typing.startTyping(scope);
     if (mode === 'synonyms' || mode === 'antonyms') return app.quiz.startRelation(scope, mode);
     return app.quiz.startQuiz(scope);
   };
@@ -40,6 +41,10 @@
   $('editCard').onclick = () => app.words.openEditor();
   $('addWordOpen').onclick = () => app.words.openAdder();
   $('wordSearch').oninput = () => app.words.renderSearch();
+  $('typingForm').onsubmit = event => {
+    event.preventDefault();
+    app.typing.submitTyping();
+  };
   $('wordSaveNext').onclick = () => app.words.saveEdit(true);
   $('wordForm').onsubmit = event => {
     event.preventDefault();
@@ -62,6 +67,7 @@
   } else if (lastView?.type === 'play') {
     if (lastView.mode === 'match') app.matching.startMatch(lastView.scope);
     else if (lastView.mode === 'sentence') app.sentence.startSentence(lastView.scope);
+    else if (lastView.mode === 'typing') app.typing.startTyping(lastView.scope);
     else if (lastView.mode === 'synonyms' || lastView.mode === 'antonyms') app.quiz.startRelation(lastView.scope, lastView.mode);
     else app.quiz.startQuiz(lastView.scope);
   } else if (lastView?.type === 'dailyStudy') {

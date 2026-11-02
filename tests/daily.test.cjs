@@ -299,7 +299,7 @@ test('a review backlog pauses new words and gives the free slots to reviews',()=
 test('synonym and antonym games are offered but not required to finish the day',()=>{
   const g=setup(10);g.run("allCards().forEach((c,i)=>{c.synonyms='syn'+i;c.antonyms='ant'+i;})");g.begin();g.learn();
   assert.deepEqual(g.value('requiredGames()'),['quiz','match']);
-  assert.deepEqual(g.value('optionalGames()'),['synonyms','antonyms']);
+  assert.deepEqual(g.value('optionalGames()'),['synonyms','antonyms','typing']);
   for(const mode of ['quiz','match'])g.run(`S.program.session.${mode}.pending=[];`);
   assert.equal(g.run('gamesComplete()'),true);
   assert.equal(g.run('advanceDailyDay()'),true);

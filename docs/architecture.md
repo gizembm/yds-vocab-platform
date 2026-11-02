@@ -31,14 +31,14 @@ eklemek gerekir. Klasörleri tarayan otomatik bir çalışma zamanı yükleyicis
 | --- | --- |
 | `Vocab.config` | Kayıt anahtarı, gün uzunluğu ve serbest Leitner aralıkları |
 | `Vocab.utils` | DOM öğesi bulma, İstanbul tarih biçimi, karıştırma |
-| `Vocab.store` | Kalıcı `data`, `save()`, kategori ve kart sorguları, hata puanı ve `Zor kelimelerim` sanal kategorisi (`config.HARD_SCOPE`) |
+| `Vocab.store` | Kalıcı `data`, `save()`, kategori ve kart sorguları, hata puanı ve `Zor kelimelerim` sanal kategorisi (`config.HARD_SCOPE`) ve kategoriye özel zor kelime kapsamı (`store.hardScope`), son çalışılan kategori sırası (`store.touchDeck`, `store.orderedDecks`) |
 | `Vocab.session.study` | Etkin kategori, çalışma kuyruğu, kart konumu ve günlük çalışma bayrağı |
 | `Vocab.session.play` | Oyun modu, kapsamı, geçici kuyruklar, seçimler ve zamanlayıcılar |
 | `Vocab.decks` | Kategori ekleme/listeleme/silme ve istatistik çizimi |
 | `Vocab.importer` | CSV/XML okuma, tekrarlı satır kontrolü ve yükleme raporu |
 | `Vocab.study` | Kart çizimi, kart geçişleri ve serbest çalışma puanlaması |
 | `Vocab.navigation` | Ana ekran/oyun ekranı geçişleri ve zamanlayıcı temizliği |
-| `Vocab.matching`, `Vocab.quiz`, `Vocab.sentence` | Serbest oyunlar; günlük modda günlük programla bağlantı |
+| `Vocab.matching`, `Vocab.quiz`, `Vocab.sentence`, `Vocab.typing` | Serbest oyunlar; günlük modda günlük programla bağlantı |
 | `Vocab.daily` | Günlük programın planlama, görünüm, oyun ve gün değişimi işlemleri |
 | `Vocab.audio` | Tarayıcı seslendirme işlemi |
 | `Vocab.shortcuts` | Kart ve çoktan seçmeli oyun klavye kısayolları |

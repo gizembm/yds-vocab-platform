@@ -96,6 +96,10 @@
           <p id="quizExample" class="mut"></p>
         </div>
         <div id="quizChoices" class="quiz-choices"></div>
+        <form id="typingForm" class="typing-form" hidden>
+          <input id="typingInput" type="text" lang="en" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="İngilizce kelime" aria-label="İngilizce kelimeyi yaz">
+          <button type="submit">Kontrol et</button>
+        </form>
         <p id="quizFeedback" class="feedback" role="status" aria-live="polite"></p>
         <p class="kbd-hint hint">Kısayol: şıkları <kbd>1</kbd>–<kbd>4</kbd> tuşlarıyla seç.</p>
       </div>
@@ -157,6 +161,7 @@
 <script src="src/js/features/games/matching.js"></script>
 <script src="src/js/features/games/quiz.js"></script>
 <script src="src/js/features/games/sentence.js"></script>
+<script src="src/js/features/games/typing.js"></script>
 <script src="src/js/features/audio/speech.js"></script>
 <script src="src/js/features/daily/scheduler.js"></script>
 <script src="src/js/features/daily/view.js"></script>
